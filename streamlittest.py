@@ -36,7 +36,7 @@ else:
 
 with c1:
     graph = st.selectbox("Available Charts: ",
-                        ['Pie Chart', 'Bar Chart', 'Trend Chart'])
+                        [ 'Bar Chart', 'Pie Chart','Trend Chart'])
     st.write("You have selected : ", graph)
 
 

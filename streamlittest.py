@@ -5,12 +5,13 @@ import plotly.graph_objects as go
 import datetime
 from graphs import bar_graph, pie_graph
 from plotly.subplots import make_subplots
+import numpy as np
 
 c1, c2, c3 = st.beta_columns(3)
 
 file_path = 'Node06.csv'
 df = pd.read_csv(file_path)
-
+df = df.loc[(df['Timestamp'] != "Timestamp")]
 graph1 = c1.button('Graph')
 
 with c2:
@@ -30,12 +31,16 @@ start_time = sT.time_input("Start Time")
 end_date = eD.date_input('End date', tomorrow)
 end_time = eT.time_input("End Time")
 
-start, End = time_strip(start_date,start_time,end_date,end_time)
+start, End = time_strip(start_date, start_time, end_date, end_time)
+# print(df)
+# df = df.loc[df["Timestamp"] != "Timestamp"]
 
-df = df.loc[(df['Timestamp'] >= start) & (df['Timestamp'] <= End)]
+# types = list(value for value in df["Timestamp"])
 
 
-if start_date < end_date:
+df = df.loc[(df['Timestamp'].astype(np.int64) >= start) & (df['Timestamp'].astype(np.int64) <= End)]
+
+if start <= End:
     st.success('Start date: `%s %s`\n\nEnd date:`%s %s`' % (start_date, start_time, end_date, end_time))
 else:
     st.error('Error: End date must fall after start date.')

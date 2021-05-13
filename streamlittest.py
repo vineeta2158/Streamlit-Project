@@ -21,29 +21,28 @@ if view_result:
 c3.button("OTHER")
 
 sD, sT = st.beta_columns(2)
-eD, eT = st.beta_columns(2) 
+eD, eT = st.beta_columns(2)
 today = datetime.datetime.now()
 tomorrow = today + datetime.timedelta(days=1)
 start_date = sD.date_input('Start date', today)
-start_time = sT.time_input("Start Time", today)
+start_time = sT.time_input("Start Time")
 end_date = eD.date_input('End date', tomorrow)
-end_time = eT.time_input("End Time", tomorrow)
+end_time = eT.time_input("End Time")
 if start_date < end_date:
-    st.success('Start date: `%s %s`\n\nEnd date:`%s %s`' % (start_date,start_time, end_date,end_time))
+    st.success('Start date: `%s %s`\n\nEnd date:`%s %s`' % (start_date, start_time, end_date, end_time))
 else:
     st.error('Error: End date must fall after start date.')
 
-
 with c1:
     graph = st.selectbox("Available Charts: ",
-                        [ 'Bar Chart', 'Pie Chart','Trend Chart'])
+                         ['Bar Chart', 'Pie Chart', 'Trend Chart'])
     st.write("You have selected : ", graph)
 
+if st.button("Refresh"):
+    if graph == "Bar Chart":
+        bar_graph(data=df, st=st, go=go)
 
-if graph == "Bar Chart":
-    bar_graph(data=df,st=st,go=go)
+    if graph == "Pie Chart":
+        pie_graph(data=df, st=st, go=go, make_subplots=make_subplots)
 
-if graph == "Pie Chart":
-    pie_graph(data=df,st=st,go=go,make_subplots=make_subplots)
-
-
+    # st.rerun()

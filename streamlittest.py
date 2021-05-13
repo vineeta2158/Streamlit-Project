@@ -1,3 +1,4 @@
+from time_convert import time_strip
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -28,6 +29,12 @@ start_date = sD.date_input('Start date', today)
 start_time = sT.time_input("Start Time")
 end_date = eD.date_input('End date', tomorrow)
 end_time = eT.time_input("End Time")
+
+start, End = time_strip(start_date,start_time,end_date,end_time)
+
+df = df.loc[(df['Timestamp'] >= start) & (df['Timestamp'] <= End)]
+
+
 if start_date < end_date:
     st.success('Start date: `%s %s`\n\nEnd date:`%s %s`' % (start_date, start_time, end_date, end_time))
 else:

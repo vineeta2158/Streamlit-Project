@@ -5,12 +5,14 @@ import numpy as np
 def bar_graph(data, go, st):
     df = data
     columns = list(df.columns)
-    columns = list(col for col in columns if col != "Timestamp")
+    columns = list(column for column in columns if column != "Timestamp")
     layout = go.Layout(
         title=go.layout.Title(text="Graph"),
     )
 
-    Bars = list(go.Bar(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64)) for name in columns)
+    Bars = list(
+        go.Bar(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64)) for name in columns
+    )
 
     fig = go.Figure(data=Bars, layout=layout)
     fig.update_xaxes(title_text="Timestamp")

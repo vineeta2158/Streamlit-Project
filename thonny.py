@@ -73,30 +73,57 @@ while loop_PLC:
         S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, S35, S41, S42, S43, S44, S45, S46, S47, S48, S49, S50, S51, S52, S53, S54, S55 = S
         current_time = datetime.now()
         Timestamp = current_time.strftime("%Y%m%d%H%M%S")
-        # data2 = ['\n',Timestamp, '\n',T1_data[1] , ',\n', T2_data[1], '\n',T3_data[1],'\n', T4_data[1],'\n',
-        # T5_data[1], '\n', T6_data[1], '\n', T7_data[1], '\n', T8_data[1], '\n', T9_data[1], '\n',
-        # T10_data.split(' '), '\n',T11_data[1], '\n',T12_data[1], '\n', T13_data[1], '\n',T14_data[1], '\n',
-        # T15_data[1]]
-        data1 = [Timestamp, ',', S1, ',', S2, ',', S3, ',', S4, ',', S5, ',', S6, ',', S7, ',', S8, ',', S9, ',',
-                 S10, ',', S11, ',', S12, ',', S13, ',', S14, ',', S15, ',', S21, ',', S22, ',', S23, ',', S24, ',',
-                 S25, ',', S26, ',', S27, ',', S28, ',', S29, ',', S30, ',', S31, ',', S32, ',', S33, ',', S34, ',',
-                 S35, ',', S41, ',', S42, ',', S43, ',', S44, ',', S45, ',', S46, ',', S47, ',', S48, ',', S49, ',',
-                 S50, ',', S51, ',', S52, ',', S53, ',', S54, ',', S55, '\n']
-
-        data = ''.join(map(str, data1))
-        my_file = open(fileName, 'a')
-        if FirstTime:
-            my_file.write(data0)
-            FirstTime = False
-            print(data0)
-
-        my_file.write(data)
-        my_file.close()
-        print('Writing Complete')
-
-        dataframe1 = pd.read_csv(fileName)
-        dataframe1.to_csv(fileName + '.csv', index=False)
-        print('CSV DONE')
+        Data = {
+            "Timestamp":Timestamp,
+            "S1":S1,
+            "S2":S2,
+            "S3":S3,
+            "S4":S4,
+            "S5":S5,
+            "S6":S6,
+            "S7":S7,
+            "S8":S8,
+            "S9":S9,
+            "S10":S10,
+            "S11":S11,
+            "S12":S12,
+            "S13":S13,
+            "S14":S14,
+            "S15":S15,
+            "S21":S21,
+            "S22":S22,
+            "S23":S23,
+            "S24":S24,
+            "S25":S25,
+            "S26":S26,
+            "S27":S27,
+            "S28":S28,
+            "S29":S29,
+            "S30":S30,
+            "S31":S31,
+            "S32":S32,
+            "S33":S33,
+            "S34":S34,
+            "S35":S35,
+            "S41":S41,
+            "S42":S42,
+            "S43":S43,
+            "S44":S44,
+            "S45":S45,
+            "S46":S46,
+            "S47":S47,
+            "S48":S48,
+            "S49":S49,
+            "S50":S50,
+            "S51":S51,
+            "S52":S52,
+            "S53":S53,
+            "S54":S54,
+            "S55":S55,
+        }
+        
+        df = pd.DataFrame(data=Data)
+        print(df)
     except ConnectionError:
         time.sleep(10)
         print('Connection Error caught')

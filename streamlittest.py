@@ -16,7 +16,7 @@ session_state = SessionState.get(
     end_time="",
     display_type="Graph",
     graph_type="Bar Chart",
-    data_type="live",
+    data_type="hist",
 )
 
 c1, c2, c3 = st.beta_columns(3)

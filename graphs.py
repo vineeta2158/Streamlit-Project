@@ -7,7 +7,7 @@ def bar_graph(data, go, st):
     columns = list(df.columns)
     columns = list(column for column in columns if column != "Timestamp")
     layout = go.Layout(
-        title=go.layout.Title(text="Graph"),
+        title=go.layout.Title(text="Bar Graph"),
     )
 
     Bars = list(
@@ -17,7 +17,10 @@ def bar_graph(data, go, st):
     fig = go.Figure(data=Bars, layout=layout)
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")
-    fig.update_layout(barmode='group')
+    fig.update_layout(barmode='group',
+                      height=800,
+                      width=1450,
+    )
     st.plotly_chart(fig)
 
 
@@ -45,5 +48,7 @@ def pie_graph(data, go, st, make_subplots):
     fig.update_traces(hole=.4, hoverinfo="label+percent+name")
     fig.update_layout(
         title_text="PIE CHART",
+        height=800,
+        width=1450,
     )
     st.plotly_chart(fig)

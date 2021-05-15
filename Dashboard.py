@@ -1,4 +1,5 @@
-from time_convert import time_strip
+from streamlit import caching, report_thread
+from time_convert import end_time, time_strip,hour_behind
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -12,15 +13,14 @@ import SessionState
 st.set_page_config(layout="wide",initial_sidebar_state="auto",page_title="ADMIN PORTAL")
 
 
-
 session_state = SessionState.get(
     file_name="Node06.csv",
     start=0,
     End=0,
-    start_date="",
-    start_time="",
+    start_date=hour_behind(),
+    start_time=hour_behind(),
     end_date="",
-    end_time="",
+    end_time=end_time(),
     display_type="Graph",
     graph_type="Bar Chart",
     data_type="hist",
@@ -45,15 +45,18 @@ def main():
             "Data Type",
             ['hist', 'live']
         )
-        session_state.column = st.sidebar.multiselect("Columns Filter",all_columns())
+        session_state.column = st.sidebar.multiselect("Columns Filter",all_columns(),default=session_state.column)
         if session_state.data_type == "hist":
             today = datetime.datetime.now()
-            tomorrow = today + datetime.timedelta(days=1)
-
-            session_state.start_date = st.sidebar.date_input('Start date', today)
-            session_state.start_time = st.sidebar.time_input("Start Time")
-            session_state.end_date = st.sidebar.date_input('End date', tomorrow)
-            session_state.end_time = st.sidebar.time_input("End Time")
+            session_state.start_date = st.sidebar.date_input('Start date', session_state.start_date)
+            session_state.start_time = st.sidebar.time_input("Start Time",session_state.start_time)
+            session_state.end_date = st.sidebar.date_input('End date', today)
+            if st.sidebar.button("Jump to Real Time"):
+                session_state.end_time = today
+                trigger_rerun()
+                caching.clear_cache()
+                st.experimental_rerun()
+            session_state.end_time = st.sidebar.time_input("End Time",session_state.end_time,help="End Time gets reset to current time if Jump to real time button is clicked!")
             session_state.start, session_state.End = time_strip(
                 session_state.start_date, 
                 session_state.start_time, 
@@ -69,6 +72,20 @@ def run_app():
     if session_state.display_type == "Graph":
         if session_state.data_type == "hist":
             df = data_provide()
+            print(df)
+            print(
+                session_state.file_name,
+                session_state.start,
+                session_state.End,
+                session_state.start_date,
+                session_state.start_time,
+                session_state.end_date,
+                session_state.end_time,
+                session_state.display_type,
+                session_state.graph_type,
+                session_state.data_type,
+                session_state.column
+            )
             render_graph(df)
         else: # Live data
             df = data_provide()
@@ -82,7 +99,7 @@ def run_app():
         st.title("Yet to be Developed :)")
  
        
-        
+
 def render_graph(df):
     if session_state.display_type == "Graph":
         if session_state.graph_type == "Bar Chart":
@@ -139,7 +156,9 @@ def data_provide_raw():
 
 def all_columns():
     df = data_provide_raw()
+    print(df,"all columns data")
     columns = list(column for column in list(df.columns) if column != "Timestamp")
+    print(columns)
     return columns
 
 
@@ -150,7 +169,8 @@ def Enquiry(lis1):
     else:
         return 0
   
-    
+def trigger_rerun():
+    ctx = report_thread.get_report_ctx()   
 
 def data_filter(df):
     if Enquiry(session_state.column):

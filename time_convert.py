@@ -1,3 +1,6 @@
+import datetime
+
+
 def double_digit_convert(str):
     if len(str) == 1:
         double_digit_string = "0" + str
@@ -26,3 +29,18 @@ def time_strip(start_date, start_time, end_date, end_time):
     start = start_year + start_month + start_day + start_hour + start_minute + start_second
     end = end_year + end_month + end_day + end_hour + end_minute + end_second
     return (int(start), int(end))
+
+
+def hour_behind():
+    today = datetime.datetime.now()
+    hour_behind = today - datetime.timedelta(hours=1)
+    return hour_behind
+
+
+def end_time():
+    today = datetime.datetime.now()
+    return today
+
+def today():
+    return datetime.datetime.now()
+    

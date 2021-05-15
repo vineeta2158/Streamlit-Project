@@ -1,8 +1,11 @@
 import math
 import numpy as np
+import streamlit as st
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 
-def bar_graph(data, go, st):
+def bar_graph(data):
     df = data
     columns = list(df.columns)
     columns = list(column for column in columns if column != "Timestamp")
@@ -18,13 +21,13 @@ def bar_graph(data, go, st):
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")
     fig.update_layout(barmode='group',
-                      height=800,
-                      width=1450,
+                      height=600,
+                      width=1000,
     )
     st.plotly_chart(fig)
 
 
-def pie_graph(data, go, st, make_subplots):
+def pie_graph(data):
     df = data
     total_pies = df["Timestamp"].count()
 
@@ -48,7 +51,27 @@ def pie_graph(data, go, st, make_subplots):
     fig.update_traces(hole=.4, hoverinfo="label+percent+name")
     fig.update_layout(
         title_text="PIE CHART",
-        height=800,
-        width=1450,
+        height=600,
+        width=1000,
+    )
+    st.plotly_chart(fig)
+
+def trend_line_chart(data):
+    df = data
+    columns = list(df.columns)
+    columns = list(column for column in columns if column != "Timestamp")
+    layout = go.Layout(
+        title=go.layout.Title(text="Line Chart"),
+    )
+    Lines = list(
+        go.Scatter(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64),mode="lines") for name in columns
+    )
+    
+    fig = go.Figure(data=Lines, layout=layout)
+    fig.update_xaxes(title_text="Timestamp")
+    fig.update_yaxes(title_text="Values")
+    fig.update_layout(
+        height=600,
+        width=1000,
     )
     st.plotly_chart(fig)

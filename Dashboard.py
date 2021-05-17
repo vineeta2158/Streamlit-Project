@@ -1,5 +1,5 @@
 from pandas import DataFrame
-from streamlit import caching, report_thread
+from streamlit import report_thread
 from time_convert import end_time, time_strip, hour_behind
 import streamlit as st
 import pandas as pd
@@ -26,7 +26,7 @@ session_state = SessionState.get(
     end_time=end_time(),
     display_type="Graph",
     graph_type="Bar Chart",
-    data_type="hist",
+    data_type="Historian",
     column=[]
 )
 
@@ -43,34 +43,34 @@ def main() -> None:
 
     # Sets the display_type session state for selected input
     session_state.display_type = st.sidebar.selectbox(
-        "Display Type ",
+        "Display Type",
         ['Graph', 'Table', 'OTHERS'],
         help="This select box is required to select the Type of Previewing the Data"
     )
 
     if session_state.display_type == "Table":
-        session_state.column = st.sidebar.multiselect("Columns Filter", all_columns())
+        session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
     elif session_state.display_type == "Graph":
         session_state.graph_type = st.sidebar.selectbox(
-            "Graph Type",
+            "Type of Chart",
             ['Bar Chart', 'Pie Chart', 'Trend Chart']
         )
         session_state.data_type = st.sidebar.selectbox(
             "Data Type",
-            ['hist', 'live']
+            ['Historian', 'Live']
         )
-        session_state.column = st.sidebar.multiselect("Columns Filter", all_columns())
-        if session_state.data_type == "hist":
+        session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
+        if session_state.data_type == "Historian":
             today = datetime.datetime.now()
-            session_state.start_date = st.sidebar.date_input('Start date', session_state.start_date)
+            session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-            session_state.end_date = st.sidebar.date_input('End date', today)
-            if st.sidebar.button("Jump to Current Time"):
+            session_state.end_date = st.sidebar.date_input('End Date', today)
+            if st.sidebar.button("Dynamic Historian"):
                 trigger_rerun()
                 session_state.end_time = today
                 trigger_rerun()
             session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time, help=
-            """End Time gets reset to current time if Jump to current time button is clicked! 
+            """End Time gets reset to current time if Dynamic Historian button is clicked! 
                                                            \n If it Doesnt work
                                                            \n Press Refresh before clicking Jump"""
                                                            )
@@ -89,7 +89,7 @@ def run_app() -> None:
     :return: This function doesnt return
     """
     if session_state.display_type == "Graph":
-        if session_state.data_type == "hist":
+        if session_state.data_type == "Historian":
             df = data_provide()  # Gather data according to session state
             render_graph(df)  # render function called
         else:  # Live data
@@ -130,7 +130,7 @@ def data_provide() -> DataFrame:
     :return: It returns with the specific filtered Data required according to the session state
     """
     if session_state.display_type == "Graph":
-        if session_state.data_type == "hist":
+        if session_state.data_type == "Historian":
             df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
             df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
             df = data_filter(df)  # data filter function called
@@ -140,7 +140,7 @@ def data_provide() -> DataFrame:
                 ]
             return df
         else:
-            df = select_data(hist=False, live=True, file_path=session_state.file_name)
+            df = select_data(Historian=False, live=True, file_path=session_state.file_name)
             df = data_filter(df)
             return df
     elif session_state.display_type == "Table":
@@ -157,7 +157,7 @@ def data_provide_raw() -> DataFrame:
     :return: It returns raw whole chunk of data required according to session state
     """
     if session_state.display_type == "Graph":
-        if session_state.data_type == "hist":
+        if session_state.data_type == "Historian":
             df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
             df = df.loc[(df['Timestamp'] != "Timestamp")]
             df = df.loc[
@@ -166,7 +166,7 @@ def data_provide_raw() -> DataFrame:
                 ]
             return df
         else:
-            df = select_data(hist=False, live=True, file_path=session_state.file_name)
+            df = select_data(Historian=False, live=True, file_path=session_state.file_name)
             return df
     elif session_state.display_type == "Table":
         df = pd.read_csv(session_state.file_name)
@@ -223,7 +223,7 @@ def data_filter(df: DataFrame) -> DataFrame:
         return df  # returns entire provided dataframe if no column is selected
     else:
         column_list = ["Timestamp"] + session_state.column  # adds the "Timestamp" column to local column list
-        return df[column_list]  # returns the filtered data accoring to session state
+        return df[column_list]  # returns the filtered data according to session state
 
 
 if __name__ == "__main__":  # this defines that main function is root function

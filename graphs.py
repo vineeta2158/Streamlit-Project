@@ -2,10 +2,17 @@ import math
 import numpy as np
 import streamlit as st
 import plotly.graph_objects as go
+from pandas import DataFrame
 from plotly.subplots import make_subplots
 
 
-def bar_graph(data):
+def bar_graph(data: DataFrame) -> None:
+    """
+    Displays Bar graph for provided Data
+
+    :param data: Dataframe for which graph is to be plotted
+    :return: It doesnt return anything
+    """
     df = data
     columns = list(df.columns)
     columns = list(column for column in columns if column != "Timestamp")
@@ -13,6 +20,7 @@ def bar_graph(data):
         title=go.layout.Title(text="Bar Graph"),
     )
 
+    # List of Graphical Object bars to be provided to figure
     Bars = list(
         go.Bar(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64)) for name in columns
     )
@@ -23,11 +31,17 @@ def bar_graph(data):
     fig.update_layout(barmode='group',
                       height=600,
                       width=1000,
-    )
+                      )
     st.plotly_chart(fig)
 
 
-def pie_graph(data):
+def pie_graph(data: DataFrame) -> None:
+    """
+    Displays Pie graph for provided Data
+
+    :param data: Dataframe for which graph is to be plotted
+    :return: It doesnt return anything
+    """
     df = data
     total_pies = df["Timestamp"].count()
 
@@ -41,14 +55,14 @@ def pie_graph(data):
     Pies = list(
         go.Pie(labels=columns, values=list(row[col] for col in columns), name=row["Timestamp"]) for index, row in
         df.iterrows())
-    # print(Pies)
     k = 0
     for i in range(1, no_row + 1):
         for j in range(1, no_col + 1):
             if len(Pies) > k:
                 fig.add_trace(Pies[k], row=i, col=j)
                 k += 1
-    fig.update_traces(hole=.4, hoverinfo="label+percent+name")
+    fig.update_traces(hoverinfo="label+percent+name")
+    # fig.update_traces(hole=.4, hoverinfo="label+percent+name") # For Doughnut Graph
     fig.update_layout(
         title_text="PIE CHART",
         height=600,
@@ -56,7 +70,14 @@ def pie_graph(data):
     )
     st.plotly_chart(fig)
 
-def trend_line_chart(data):
+
+def trend_line_chart(data: DataFrame) -> None:
+    """
+    Displays Trend line chart for provided Data
+
+    :param data: Dataframe for which graph is to be plotted
+    :return: It doesnt return anything
+    """
     df = data
     columns = list(df.columns)
     columns = list(column for column in columns if column != "Timestamp")
@@ -64,9 +85,10 @@ def trend_line_chart(data):
         title=go.layout.Title(text="Line Chart"),
     )
     Lines = list(
-        go.Scatter(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64),mode="lines") for name in columns
+        go.Scatter(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64), mode="lines") for name in
+        columns
     )
-    
+
     fig = go.Figure(data=Lines, layout=layout)
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")

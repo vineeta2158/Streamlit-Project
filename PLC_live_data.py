@@ -1,4 +1,5 @@
 from numpy import column_stack
+from pandas import DataFrame
 from pylogix import PLC
 from datetime import datetime
 import pandas as pd
@@ -19,16 +20,28 @@ comm3.IPAddress = '192.168.0.116'
 FirstTime = True
 
 
-def column_values(comm, string):
+def column_values(comm, string: str) -> str:
+    """
+    It returns with specific column values
+
+    :param comm: communication medium
+    :param string: Real values
+    :return: value of column for a timestamp in str data type
+    """
     T = comm.Read(string)
     T_data = str(T).split(' ')
     return T_data[1]
 
 
-Real = list("Real" + str(i + 1) for i in range(15))
+Real = list("Real" + str(i + 1) for i in range(15))  # generates a list for values Real1 to Real15
 
 
-def live_data():
+def live_data() -> DataFrame:
+    """
+    It provides with live data for the instance it is called!
+
+    :return: Dataframe for a specific Timestamp for which the function is called
+    """
     try:
 
         T = list(column_values(comm=comm1, string=real) for real in Real)

@@ -43,34 +43,34 @@ def main() -> None:
 
     # Sets the display_type session state for selected input
     session_state.display_type = st.sidebar.selectbox(
-        "Display Type ",
+        "Display Type",
         ['Graph', 'Table', 'OTHERS'],
         help="This select box is required to select the Type of Previewing the Data"
     )
 
     if session_state.display_type == "Table":
-        session_state.column = st.sidebar.multiselect("Columns Filter", all_columns())
+        session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
     elif session_state.display_type == "Graph":
         session_state.graph_type = st.sidebar.selectbox(
-            "Graph Type",
+            "Type of Chart",
             ['Bar Chart', 'Pie Chart', 'Trend Chart']
         )
         session_state.data_type = st.sidebar.selectbox(
             "Data Type",
             ['Historian', 'Live']
         )
-        session_state.column = st.sidebar.multiselect("Columns Filter", all_columns())
+        session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
         if session_state.data_type == "Historian":
             today = datetime.datetime.now()
-            session_state.start_date = st.sidebar.date_input('Start date', session_state.start_date)
+            session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-            session_state.end_date = st.sidebar.date_input('End date', today)
-            if st.sidebar.button("Jump to Current Time"):
+            session_state.end_date = st.sidebar.date_input('End Date', today)
+            if st.sidebar.button("Dynamic Historian"):
                 trigger_rerun()
                 session_state.end_time = today
                 trigger_rerun()
             session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time, help=
-            """End Time gets reset to current time if Jump to current time button is clicked! 
+            """End Time gets reset to current time if Dynamic Historian button is clicked! 
                                                            \n If it Doesnt work
                                                            \n Press Refresh before clicking Jump"""
                                                            )
@@ -223,7 +223,7 @@ def data_filter(df: DataFrame) -> DataFrame:
         return df  # returns entire provided dataframe if no column is selected
     else:
         column_list = ["Timestamp"] + session_state.column  # adds the "Timestamp" column to local column list
-        return df[column_list]  # returns the filtered data accoring to session state
+        return df[column_list]  # returns the filtered data according to session state
 
 
 if __name__ == "__main__":  # this defines that main function is root function

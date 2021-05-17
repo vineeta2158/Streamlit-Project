@@ -111,13 +111,16 @@ def render_graph(df: DataFrame) -> None:
     :param df: Dataframe for which the graph is to be plotted
     :return: It returns nothing. It just plots and displays graph
     """
-    if session_state.display_type == "Graph":
-        if session_state.graph_type == "Bar Chart":
-            bar_graph(df)
-        elif session_state.graph_type == "Pie Chart":
-            pie_graph(df)
-        elif session_state.graph_type == "Trend Chart":
-            trend_line_chart(df)
+    if df.empty:
+        st.title("No Data to display")
+    else:
+        if session_state.display_type == "Graph":
+            if session_state.graph_type == "Bar Chart":
+                bar_graph(df)
+            elif session_state.graph_type == "Pie Chart":
+                pie_graph(df)
+            elif session_state.graph_type == "Trend Chart":
+                trend_line_chart(df)
 
 
 def data_provide() -> DataFrame:

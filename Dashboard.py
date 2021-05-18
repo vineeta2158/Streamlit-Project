@@ -1,3 +1,5 @@
+import statistics
+
 from pandas import DataFrame
 from streamlit import report_thread
 from time_convert import end_time, time_strip, hour_behind
@@ -27,7 +29,8 @@ session_state = SessionState.get(
     display_type="Graph",
     graph_type="Bar Chart",
     data_type="Historian",
-    column=[]
+    column=[],
+    column_statistic=[],
 )
 
 
@@ -114,6 +117,9 @@ def render_graph(df: DataFrame) -> None:
     if df.empty:
         st.title("No Data to display")
     else:
+        session_state.column_statistic = st.multiselect("Select Tags For Statistics", all_columns_filtered())
+        if not Enquiry(session_state.column_statistic):
+            display_stats(df)
         if session_state.display_type == "Graph":
             if session_state.graph_type == "Bar Chart":
                 bar_graph(df)
@@ -185,6 +191,17 @@ def all_columns() -> list:
     return columns
 
 
+def all_columns_filtered() -> list:
+    """
+    Creates a list of all columns that are selected in multiselect
+
+    :return: It returns the list of all columns available in Filtered data set
+    """
+    df = data_provide()  # Raw dataframe is fetched
+    columns = list(column for column in list(df.columns) if column != "Timestamp")
+    return columns
+
+
 def Enquiry(lis1: list) -> bool:
     """
     It checks whether the list provided is empty
@@ -224,6 +241,59 @@ def data_filter(df: DataFrame) -> DataFrame:
     else:
         column_list = ["Timestamp"] + session_state.column  # adds the "Timestamp" column to local column list
         return df[column_list]  # returns the filtered data according to session state
+
+
+def display_stats(df: DataFrame) -> None:
+    """
+    Displays data for each selected column stored in session state
+
+    :param df: Current Data
+    :return: Returns nothing
+    """
+    for name in session_state.column_statistic:
+        mini = minimum(df, name)
+        maxi = maximum(df, name)
+        aver = average(df, name)
+        st.header('Statistics for %s :' % name)
+        st.subheader(' Minimum : `%d`  Maximum : `%d`  Average : `%d` \n ' % (
+            mini, maxi, aver
+        ))
+
+
+def minimum(df: DataFrame, column_name: str) -> float:
+    """
+    generates minimum value for specified dataframe and column
+
+    :param df: Given Dataframe
+    :param column_name: Name of column
+    :return: Returns a float minimum value
+    """
+    List = list(float(val) for val in df[column_name])
+    return min(List)
+
+
+def maximum(df: DataFrame, column_name: str) -> float:
+    """
+    generates maximum value for specified dataframe and column
+
+    :param df: Given Dataframe
+    :param column_name: Name of column
+    :return: Returns a float maximum value
+    """
+    List = list(float(val) for val in df[column_name])
+    return max(List)
+
+
+def average(df: DataFrame, column_name: str) -> float:
+    """
+    generates average value for specified dataframe and column
+
+    :param df: Given Dataframe
+    :param column_name: Name of column
+    :return: Returns a float average value
+    """
+    List = list(float(val) for val in df[column_name])
+    return statistics.mean(List)
 
 
 if __name__ == "__main__":  # this defines that main function is root function

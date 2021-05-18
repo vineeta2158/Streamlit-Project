@@ -1,5 +1,4 @@
 import statistics
-
 from pandas import DataFrame
 from streamlit import report_thread
 from time_convert import end_time, time_strip, hour_behind
@@ -72,11 +71,9 @@ def main() -> None:
                 trigger_rerun()
                 session_state.end_time = today
                 trigger_rerun()
-            session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time, help=
-            """End Time gets reset to current time if Dynamic Historian button is clicked! 
-                                                           \n If it Doesnt work
-                                                           \n Press Refresh before clicking Jump"""
-                                                           )
+            session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time, help="""End Time gets 
+            reset to current time if Dynamic Historian button is clicked! \n If it Doesnt work \n Press Refresh 
+            before clicking Dynamic Historian """)
             session_state.start, session_state.End = time_strip(
                 session_state.start_date,
                 session_state.start_time,
@@ -224,7 +221,7 @@ def trigger_rerun() -> None:
 
     :return: Doesnt return anything
     """
-    ctx = report_thread.get_report_ctx()
+    report_thread.get_report_ctx()
 
 
 def data_filter(df: DataFrame) -> DataFrame:

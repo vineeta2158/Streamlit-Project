@@ -1,7 +1,8 @@
 import pandas as pd
 from pandas import DataFrame
 
-from PLC_live_data import live_data
+
+# from PLC_live_data import live_data
 
 
 def select_data(live: bool, Historian: bool, file_path: str) -> DataFrame:
@@ -14,12 +15,18 @@ def select_data(live: bool, Historian: bool, file_path: str) -> DataFrame:
     :return: Return Dataframe according to provided Parameters
     """
     if live:
-        df = live_data()  # Live Data Function called
-        return df
+        # df = live_data()  # Live Data Function called
+        df = pd.read_csv(file_path)
+        df = df.loc[(df['Timestamp'] != "Timestamp")]
+        row_1 = df.tail(1)
+        return row_1
     if Historian:
         df = pd.read_csv(file_path)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
         return df
     else:
-        df = live_data()
-        return df
+        # df = live_data()  # Live Data Function called
+        df = pd.read_csv(file_path)
+        df = df.loc[(df['Timestamp'] != "Timestamp")]
+        row_1 = df.tail(1)
+        return row_1

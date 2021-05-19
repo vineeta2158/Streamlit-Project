@@ -9,7 +9,9 @@ from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph
 import numpy as np
 from data_selector import select_data
 import SessionState
-
+import os
+from streamlit.server.server import Server
+from streamlit.report_thread import get_report_ctx
 # Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
 # Page config should run only once while executing code
 st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMIN PORTAL")
@@ -30,8 +32,23 @@ session_state = SessionState.get(
     data_type="Historian",
     column=[],
     column_statistic=[],
+    dynamic = False,
+    stale_dynamic = False
 )
+ctx = get_report_ctx()  
+# get session id
+session_id  = ctx.session_id  
 
+# get session
+server = Server.get_current()
+session_info = server._session_info_by_id.get(session_id)
+session = session_info.session
+
+# register watcher
+session._local_sources_watcher._register_watcher(
+    os.path.join(os.path.dirname(__file__), session_state.file_name ), 
+    'dummy:'+ session_state.file_name
+)  
 
 def main() -> None:
     """
@@ -66,14 +83,13 @@ def main() -> None:
             today = datetime.datetime.now()
             session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-            session_state.end_date = st.sidebar.date_input('End Date', today)
-            if st.sidebar.button("Dynamic Historian"):
+            session_state.dynamic = st.sidebar.checkbox("Dynamic Historian",session_state.dynamic)
+            if session_state.dynamic != session_state.stale_dynamic:
+                session_state.stale_dynamic = session_state.dynamic
                 trigger_rerun()
-                session_state.end_time = today
-                trigger_rerun()
-            session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time, help="""End Time gets 
-            reset to current time if Dynamic Historian button is clicked! \n If it Doesnt work \n Press Refresh 
-            before clicking Dynamic Historian """)
+            if not session_state.dynamic:
+                session_state.end_date = st.sidebar.date_input('End Date', today)
+                session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
             session_state.start, session_state.End = time_strip(
                 session_state.start_date,
                 session_state.start_time,
@@ -139,9 +155,14 @@ def data_provide() -> DataFrame:
             df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
             df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
             df = data_filter(df)  # data filter function called
-            df = df.loc[
+            if  session_state.dynamic:
+                df = df.loc[
                 (df['Timestamp'].astype(np.int64) >= session_state.start)
-                & (df['Timestamp'].astype(np.int64) <= session_state.End)
+                ]
+            else:
+                df = df.loc[
+                    (df['Timestamp'].astype(np.int64) >= session_state.start)
+                    & (df['Timestamp'].astype(np.int64) <= session_state.End)
                 ]
             return df
         else:
@@ -165,9 +186,14 @@ def data_provide_raw() -> DataFrame:
         if session_state.data_type == "Historian":
             df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
             df = df.loc[(df['Timestamp'] != "Timestamp")]
-            df = df.loc[
+            if session_state.dynamic:
+                df = df.loc[
                 (df['Timestamp'].astype(np.int64) >= session_state.start)
-                & (df['Timestamp'].astype(np.int64) <= session_state.End)
+                ]
+            else:
+                df = df.loc[
+                    (df['Timestamp'].astype(np.int64) >= session_state.start)
+                    & (df['Timestamp'].astype(np.int64) <= session_state.End)
                 ]
             return df
         else:

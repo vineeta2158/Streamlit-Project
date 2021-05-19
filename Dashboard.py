@@ -5,7 +5,7 @@ from time_convert import end_time, time_strip, hour_behind
 import streamlit as st
 import pandas as pd
 import datetime
-from graphs import bar_graph, pie_graph, trend_line_chart
+from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph
 import numpy as np
 from data_selector import select_data
 import SessionState
@@ -55,7 +55,7 @@ def main() -> None:
     elif session_state.display_type == "Graph":
         session_state.graph_type = st.sidebar.selectbox(
             "Type of Chart",
-            ['Bar Chart', 'Pie Chart', 'Trend Chart']
+            ['Bar Chart', 'Pie Chart', 'Trend Chart', 'Doughnut Chart']
         )
         session_state.data_type = st.sidebar.selectbox(
             "Data Type",
@@ -124,6 +124,8 @@ def render_graph(df: DataFrame) -> None:
                 pie_graph(df)
             elif session_state.graph_type == "Trend Chart":
                 trend_line_chart(df)
+            elif session_state.graph_type == "Doughnut Chart":
+                doughnut_graph(df)
 
 
 def data_provide() -> DataFrame:

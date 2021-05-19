@@ -83,7 +83,7 @@ def main() -> None:
             today = datetime.datetime.now()
             session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-            session_state.dynamic = st.sidebar.checkbox("Dynamic Historian",session_state.dynamic)
+            session_state.dynamic = st.sidebar.checkbox("Dynamic Historian")
             if session_state.dynamic != session_state.stale_dynamic:
                 session_state.stale_dynamic = session_state.dynamic
                 trigger_rerun()

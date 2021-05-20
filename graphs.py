@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 from pandas import DataFrame
@@ -99,34 +100,6 @@ def trend_line_chart(data: DataFrame) -> None:
     st.plotly_chart(fig)
 
 
-def trend_line_chart(data: DataFrame) -> None:
-    """
-    Displays Trend line chart for provided Data
-
-    :param data: Dataframe for which graph is to be plotted
-    :return: It doesnt return anything
-    """
-    df = data
-    columns = list(df.columns)
-    columns = list(column for column in columns if column != "Timestamp")
-    layout = go.Layout(
-        title=go.layout.Title(text="Line Chart"),
-    )
-    Lines = list(
-        go.Scatter(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64), mode="lines") for name in
-        columns
-    )
-
-    fig = go.Figure(data=Lines, layout=layout)
-    fig.update_xaxes(title_text="Timestamp")
-    fig.update_yaxes(title_text="Values")
-    fig.update_layout(
-        height=600,
-        width=1000,
-    )
-    st.plotly_chart(fig)
-    
-
 def doughnut_graph(data: DataFrame) -> None:
     """
     Displays Doughnut graph for provided Data
@@ -156,6 +129,63 @@ def doughnut_graph(data: DataFrame) -> None:
     fig.update_traces(hole=.4, hoverinfo="label+percent+name")  # For Doughnut Graph
     fig.update_layout(
         title_text="DOUGHNUT CHART",
+        height=600,
+        width=1000,
+    )
+    st.plotly_chart(fig)
+
+
+def point_chart(data: DataFrame) -> None:
+    """
+    Displays Point chart for provided Data
+
+    :param data: Dataframe for which graph is to be plotted
+    :return: It doesnt return anything
+    """
+    df = data
+    columns = list(df.columns)
+    columns = list(column for column in columns if column != "Timestamp")
+    layout = go.Layout(
+        title=go.layout.Title(text="Point Chart"),
+    )
+    Area = list(
+        go.Scatter(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64), mode="markers") for name in
+        columns
+    )
+
+    fig = go.Figure(data=Area, layout=layout)
+    fig.update_xaxes(title_text="Timestamp")
+    fig.update_yaxes(title_text="Values")
+    fig.update_layout(
+        height=600,
+        width=1000,
+    )
+    st.plotly_chart(fig)
+
+
+def area_chart(data: DataFrame) -> None:
+    """
+    Displays Area line chart for provided Data
+
+    :param data: Dataframe for which graph is to be plotted
+    :return: It doesnt return anything
+    """
+    df = data
+    columns = list(df.columns)
+    columns = list(column for column in columns if column != "Timestamp")
+    layout = go.Layout(
+        title=go.layout.Title(text="Area Chart"),
+    )
+    Lines = list(
+        go.Scatter(name=name, x=df["Timestamp"].astype(str), y=df[name].astype(np.float64),
+                   mode="none", fill="tonexty") for name in
+        columns
+    )
+
+    fig = go.Figure(data=Lines, layout=layout)
+    fig.update_xaxes(title_text="Timestamp")
+    fig.update_yaxes(title_text="Values")
+    fig.update_layout(
         height=600,
         width=1000,
     )

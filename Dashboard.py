@@ -5,13 +5,14 @@ from time_convert import end_time, time_strip, hour_behind
 import streamlit as st
 import pandas as pd
 import datetime
-from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph
+from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart
 import numpy as np
 from data_selector import select_data
 import SessionState
 import os
 from streamlit.server.server import Server
 from streamlit.report_thread import get_report_ctx
+
 # Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
 # Page config should run only once while executing code
 st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMIN PORTAL")
@@ -32,12 +33,12 @@ session_state = SessionState.get(
     data_type="Historian",
     column=[],
     column_statistic=[],
-    dynamic = False,
-    stale_dynamic = False
+    dynamic=False,
+    stale_dynamic=False
 )
-ctx = get_report_ctx()  
+ctx = get_report_ctx()
 # get session id
-session_id  = ctx.session_id  
+session_id = ctx.session_id
 
 # get session
 server = Server.get_current()
@@ -46,9 +47,10 @@ session = session_info.session
 
 # register watcher
 session._local_sources_watcher._register_watcher(
-    os.path.join(os.path.dirname(__file__), session_state.file_name ), 
-    'dummy:'+ session_state.file_name
-)  
+    os.path.join(os.path.dirname(__file__), session_state.file_name),
+    'dummy:' + session_state.file_name
+)
+
 
 def main() -> None:
     """
@@ -72,7 +74,7 @@ def main() -> None:
     elif session_state.display_type == "Graph":
         session_state.graph_type = st.sidebar.selectbox(
             "Type of Chart",
-            ['Bar Chart', 'Pie Chart', 'Trend Chart', 'Doughnut Chart']
+            ['Bar Chart', 'Pie Chart', 'Trend Chart', 'Doughnut Chart', 'Point Chart', 'Area Chart', 'Table']
         )
         session_state.data_type = st.sidebar.selectbox(
             "Data Type",
@@ -142,6 +144,12 @@ def render_graph(df: DataFrame) -> None:
                 trend_line_chart(df)
             elif session_state.graph_type == "Doughnut Chart":
                 doughnut_graph(df)
+            elif session_state.graph_type == "Point Chart":
+                point_chart(df)
+            elif session_state.graph_type == "Area Chart":
+                area_chart(df)
+            elif session_state.graph_type == "Table":
+                st.dataframe(df)
 
 
 def data_provide() -> DataFrame:
@@ -155,15 +163,15 @@ def data_provide() -> DataFrame:
             df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
             df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
             df = data_filter(df)  # data filter function called
-            if  session_state.dynamic:
+            if session_state.dynamic:
                 df = df.loc[
-                (df['Timestamp'].astype(np.int64) >= session_state.start)
+                    (df['Timestamp'].astype(np.int64) >= session_state.start)
                 ]
             else:
                 df = df.loc[
                     (df['Timestamp'].astype(np.int64) >= session_state.start)
                     & (df['Timestamp'].astype(np.int64) <= session_state.End)
-                ]
+                    ]
             return df
         else:
             df = select_data(Historian=False, live=True, file_path=session_state.file_name)
@@ -188,13 +196,13 @@ def data_provide_raw() -> DataFrame:
             df = df.loc[(df['Timestamp'] != "Timestamp")]
             if session_state.dynamic:
                 df = df.loc[
-                (df['Timestamp'].astype(np.int64) >= session_state.start)
+                    (df['Timestamp'].astype(np.int64) >= session_state.start)
                 ]
             else:
                 df = df.loc[
                     (df['Timestamp'].astype(np.int64) >= session_state.start)
                     & (df['Timestamp'].astype(np.int64) <= session_state.End)
-                ]
+                    ]
             return df
         else:
             df = select_data(Historian=False, live=True, file_path=session_state.file_name)

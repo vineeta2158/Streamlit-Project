@@ -78,18 +78,14 @@ def main() -> None:
         )
         session_state.data_type = st.sidebar.selectbox(
             "Data Type",
-            ['Historian', 'Live']
+            ['Historian', 'Live','Dynamic Historian']
         )
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
-        if session_state.data_type == "Historian":
+        if session_state.data_type != "Live" :
             today = datetime.datetime.now()
             session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-            session_state.dynamic = st.sidebar.checkbox("Dynamic Historian", value=True)
-            if session_state.dynamic != session_state.stale_dynamic:
-                session_state.stale_dynamic = session_state.dynamic
-                trigger_rerun()
-            if not session_state.dynamic:
+            if session_state.data_type != "Dynamic Historian" :
                 session_state.end_date = st.sidebar.date_input('End Date', today)
                 session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
             session_state.start, session_state.End = time_strip(
@@ -107,7 +103,7 @@ def run_app() -> None:
     :return: This function doesnt return
     """
     if session_state.display_type == "Graph":
-        if session_state.data_type == "Historian":
+        if session_state.data_type != "Live":
             df = data_provide()  # Gather data according to session state
             render_graph(df)  # render function called
         else:  # Live data
@@ -159,7 +155,7 @@ def data_provide() -> DataFrame:
     :return: It returns with the specific filtered Data required according to the session state
     """
     if session_state.display_type == "Graph":
-        if session_state.data_type == "Historian":
+        if session_state.data_type != "Live":
             df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
             df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
             df = data_filter(df)  # data filter function called
@@ -191,7 +187,7 @@ def data_provide_raw() -> DataFrame:
     :return: It returns raw whole chunk of data required according to session state
     """
     if session_state.display_type == "Graph":
-        if session_state.data_type == "Historian":
+        if session_state.data_type != "Live":
             df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
             df = df.loc[(df['Timestamp'] != "Timestamp")]
             if session_state.dynamic:
@@ -202,7 +198,7 @@ def data_provide_raw() -> DataFrame:
                 df = df.loc[
                     (df['Timestamp'].astype(np.int64) >= session_state.start)
                     & (df['Timestamp'].astype(np.int64) <= session_state.End)
-                    ]
+                ]
             return df
         else:
             df = select_data(Historian=False, live=True, file_path=session_state.file_name)

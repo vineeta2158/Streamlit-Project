@@ -69,7 +69,7 @@ def main() -> None:
         help="This select box is required to select the Type of Previewing the Data"
     )
 
-    if session_state.display_type == "Table":
+    if session_state.display_type == "CSV Data":
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
     elif session_state.display_type == "Graph":
         session_state.graph_type = st.sidebar.selectbox(
@@ -109,7 +109,7 @@ def run_app() -> None:
         else:  # Live data
             df = data_provide()
             render_graph(df)
-    elif session_state.display_type == "Table":
+    elif session_state.display_type == "CSV Data":
         st.title(session_state.file_name)
         df = data_provide()
         st.dataframe(df)  # renders the dataframe
@@ -173,7 +173,7 @@ def data_provide() -> DataFrame:
             df = select_data(Historian=False, live=True, file_path=session_state.file_name)
             df = data_filter(df)
             return df
-    elif session_state.display_type == "Table":
+    elif session_state.display_type == "CSV Data":
         df = pd.read_csv(session_state.file_name)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
         df = data_filter(df)
@@ -203,7 +203,7 @@ def data_provide_raw() -> DataFrame:
         else:
             df = select_data(Historian=False, live=True, file_path=session_state.file_name)
             return df
-    elif session_state.display_type == "Table":
+    elif session_state.display_type == "CSV Data":
         df = pd.read_csv(session_state.file_name)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
         return df

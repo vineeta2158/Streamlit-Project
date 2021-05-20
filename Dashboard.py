@@ -156,7 +156,8 @@ def data_provide() -> DataFrame:
     """
     if session_state.display_type == "Graph":
         if session_state.data_type != "Live":
-            df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
+            df = pd.read_csv(session_state.file_name) # read the csv of name given in session state
+            df = data_freshness_check(df)
             df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
             df = data_filter(df)  # data filter function called
             if session_state.dynamic:
@@ -167,14 +168,16 @@ def data_provide() -> DataFrame:
                 df = df.loc[
                     (df['Timestamp'].astype(np.int64) >= session_state.start)
                     & (df['Timestamp'].astype(np.int64) <= session_state.End)
-                    ]
+                ]
             return df
         else:
             df = select_data(Historian=False, live=True, file_path=session_state.file_name)
+            df = data_freshness_check(df)
             df = data_filter(df)
             return df
     elif session_state.display_type == "CSV Data":
         df = pd.read_csv(session_state.file_name)
+        df = data_freshness_check(df)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
         df = data_filter(df)
         return df
@@ -288,6 +291,16 @@ def display_stats(df: DataFrame) -> None:
             mini, maxi, aver
         ))
 
+
+def data_freshness_check(df:DataFrame) -> DataFrame:
+    d2 = pd.read_csv(session_state.file_name)
+    df_diff = pd.concat([df,d2]).drop_duplicates(keep=False)
+    if df_diff.empty:
+        return df
+    else:
+        return d2
+    
+    
 
 def minimum(df: DataFrame, column_name: str) -> float:
     """

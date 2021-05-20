@@ -26,7 +26,7 @@ session_state = SessionState.get(
     End=0,
     start_date=hour_behind(),
     start_time=hour_behind(),
-    end_date="",
+    end_date=end_time(),
     end_time=end_time(),
     display_type="Graph",
     graph_type="Bar Chart",
@@ -65,7 +65,7 @@ def main() -> None:
     # Sets the display_type session state for selected input
     session_state.display_type = st.sidebar.selectbox(
         "Display Type",
-        ['Graph', 'Table', 'OTHERS'],
+        ['Graph', 'CSV Data', 'OTHERS'],
         help="This select box is required to select the Type of Previewing the Data"
     )
 
@@ -85,7 +85,7 @@ def main() -> None:
             today = datetime.datetime.now()
             session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-            session_state.dynamic = st.sidebar.checkbox("Dynamic Historian")
+            session_state.dynamic = st.sidebar.checkbox("Dynamic Historian", value=True)
             if session_state.dynamic != session_state.stale_dynamic:
                 session_state.stale_dynamic = session_state.dynamic
                 trigger_rerun()

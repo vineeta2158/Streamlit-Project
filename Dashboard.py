@@ -78,7 +78,7 @@ def main() -> None:
         )
         session_state.data_type = st.sidebar.selectbox(
             "Data Type",
-            ['Historian', 'Live','Dynamic Historian']
+            ['Historian', 'Live', 'Dynamic Historian']
         )
         if session_state.data_type == "Dynamic Historian":
             session_state.dynamic = True
@@ -101,6 +101,7 @@ def main() -> None:
                 session_state.end_time
             )
     run_app()  # App is finally run after all required session states are gathered
+    trigger_rerun()
 
 
 def run_app() -> None:

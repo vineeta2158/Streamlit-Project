@@ -34,8 +34,8 @@ session_state = SessionState.get(
     column=[],
     column_statistic=[],
     dynamic=False,
-    stale_dynamic=False
 )
+
 ctx = get_report_ctx()
 # get session id
 session_id = ctx.session_id
@@ -80,14 +80,20 @@ def main() -> None:
             "Data Type",
             ['Historian', 'Live','Dynamic Historian']
         )
+        if session_state.data_type == "Dynamic Historian":
+            session_state.dynamic = True
+        else:
+            session_state.dynamic = False
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
-        if session_state.data_type != "Live" :
+        if session_state.data_type != "Live":
             today = datetime.datetime.now()
             session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-            if session_state.data_type != "Dynamic Historian" :
+            if session_state.data_type != "Dynamic Historian":
                 session_state.end_date = st.sidebar.date_input('End Date', today)
                 session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
+            else:
+                session_state.end_time = end_time()
             session_state.start, session_state.End = time_strip(
                 session_state.start_date,
                 session_state.start_time,
@@ -104,8 +110,11 @@ def run_app() -> None:
     """
     if session_state.display_type == "Graph":
         if session_state.data_type != "Live":
-            df = data_provide()  # Gather data according to session state
-            render_graph(df)  # render function called
+            if session_state.End < session_state.start:
+                st.title("End Time must be Greater than Start Time")
+            else:
+                df = data_provide()  # Gather data according to session state
+                render_graph(df)  # render function called
         else:  # Live data
             df = data_provide()
             render_graph(df)
@@ -129,8 +138,9 @@ def render_graph(df: DataFrame) -> None:
         st.title("No Data to display")
     else:
         session_state.column_statistic = st.multiselect("Select Tags For Statistics", all_columns_filtered())
-        if not Enquiry(session_state.column_statistic):
-            display_stats(df)
+        if session_state.data_type != "Live":
+            if not Enquiry(session_state.column_statistic):
+                display_stats(df)
         if session_state.display_type == "Graph":
             if session_state.graph_type == "Bar Chart":
                 bar_graph(df)
@@ -156,7 +166,7 @@ def data_provide() -> DataFrame:
     """
     if session_state.display_type == "Graph":
         if session_state.data_type != "Live":
-            df = pd.read_csv(session_state.file_name) # read the csv of name given in session state
+            df = pd.read_csv(session_state.file_name)  # read the csv of name given in session state
             df = data_freshness_check(df)
             df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
             df = data_filter(df)  # data filter function called
@@ -168,13 +178,15 @@ def data_provide() -> DataFrame:
                 df = df.loc[
                     (df['Timestamp'].astype(np.int64) >= session_state.start)
                     & (df['Timestamp'].astype(np.int64) <= session_state.End)
-                ]
+                    ]
             return df
         else:
-            df = select_data(Historian=False, live=True, file_path=session_state.file_name)
-            df = data_freshness_check(df)
-            df = data_filter(df)
-            return df
+            # df = select_data(Historian=False, live=True, file_path=session_state.file_name)
+            df = pd.read_csv(session_state.file_name)
+            df = df.loc[(df['Timestamp'] != "Timestamp")]
+            row_1 = df.tail(1)
+            row_1 = data_filter(row_1)
+            return row_1
     elif session_state.display_type == "CSV Data":
         df = pd.read_csv(session_state.file_name)
         df = data_freshness_check(df)
@@ -201,7 +213,7 @@ def data_provide_raw() -> DataFrame:
                 df = df.loc[
                     (df['Timestamp'].astype(np.int64) >= session_state.start)
                     & (df['Timestamp'].astype(np.int64) <= session_state.End)
-                ]
+                    ]
             return df
         else:
             df = select_data(Historian=False, live=True, file_path=session_state.file_name)
@@ -292,15 +304,14 @@ def display_stats(df: DataFrame) -> None:
         ))
 
 
-def data_freshness_check(df:DataFrame) -> DataFrame:
+def data_freshness_check(df: DataFrame) -> DataFrame:
     d2 = pd.read_csv(session_state.file_name)
-    df_diff = pd.concat([df,d2]).drop_duplicates(keep=False)
+    df_diff = pd.concat([df, d2]).drop_duplicates(keep=False)
     if df_diff.empty:
         return df
     else:
         return d2
-    
-    
+
 
 def minimum(df: DataFrame, column_name: str) -> float:
     """

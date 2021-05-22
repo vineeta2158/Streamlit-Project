@@ -160,6 +160,7 @@ def point_chart(data: DataFrame) -> None:
         height=600,
         width=1000,
     )
+    fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
     st.plotly_chart(fig)
 
 
@@ -189,4 +190,25 @@ def area_chart(data: DataFrame) -> None:
         height=600,
         width=1000,
     )
+    st.plotly_chart(fig)
+
+
+def x_y_graph(data: DataFrame, column_name_1: str, column_list: list):
+    df = data
+    layout = go.Layout(
+        title=go.layout.Title(text="X - Y  Plotter"),
+    )
+    columns = list(column for column in column_list if column != column_name_1)
+    Line = list(go.Scatter(name=col, x=sorted(df[column_name_1].astype(np.float64)),
+                           y=df[col].astype(np.float64),
+                           mode="lines+markers") for col in columns)
+
+    fig = go.Figure(data=Line, layout=layout)
+    fig.update_xaxes(title_text=column_name_1)
+    fig.update_yaxes(title_text="Columns")
+    fig.update_layout(
+        height=600,
+        width=1000,
+    )
+    fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
     st.plotly_chart(fig)

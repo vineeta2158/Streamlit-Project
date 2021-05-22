@@ -5,7 +5,7 @@ from time_convert import end_time, time_strip, hour_behind
 import streamlit as st
 import pandas as pd
 import datetime
-from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart
+from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph
 import numpy as np
 from data_selector import select_data
 import SessionState
@@ -34,6 +34,8 @@ session_state = SessionState.get(
     column=[],
     column_statistic=[],
     dynamic=False,
+    Live_exlude_graph=['Trend Chart', 'Area Chart',
+                       'X-Y Plotter']
 )
 
 ctx = get_report_ctx()
@@ -74,7 +76,8 @@ def main() -> None:
     elif session_state.display_type == "Graph":
         session_state.graph_type = st.sidebar.selectbox(
             "Type of Chart",
-            ['Bar Chart', 'Pie Chart', 'Trend Chart', 'Doughnut Chart', 'Point Chart', 'Area Chart', 'Table']
+            ['Bar Chart', 'Pie Chart', 'Trend Chart', 'Doughnut Chart', 'Point Chart', 'Area Chart', 'Table',
+             'X-Y Plotter']
         )
         session_state.data_type = st.sidebar.selectbox(
             "Data Type",
@@ -138,6 +141,8 @@ def render_graph(df: DataFrame) -> None:
     if df.empty:
         st.title("No Data to display")
     else:
+        if session_state.graph_type == "X-Y Plotter" and len(session_state.column) == 1:
+            st.error("Please select atleast Two tags in Tag selection")
         session_state.column_statistic = st.multiselect("Select Tags For Statistics", all_columns_filtered())
         if session_state.data_type != "Live":
             if not Enquiry(session_state.column_statistic):
@@ -147,16 +152,29 @@ def render_graph(df: DataFrame) -> None:
                 bar_graph(df)
             elif session_state.graph_type == "Pie Chart":
                 pie_graph(df)
-            elif session_state.graph_type == "Trend Chart":
-                trend_line_chart(df)
             elif session_state.graph_type == "Doughnut Chart":
                 doughnut_graph(df)
-            elif session_state.graph_type == "Point Chart":
-                point_chart(df)
-            elif session_state.graph_type == "Area Chart":
-                area_chart(df)
             elif session_state.graph_type == "Table":
                 st.dataframe(df)
+            elif session_state.graph_type == "Point Chart":
+                point_chart(df)
+            if session_state.data_type != "Live":
+                if session_state.graph_type == "Trend Chart":
+                    trend_line_chart(df)
+                elif session_state.graph_type == "Area Chart":
+                    area_chart(df)
+                elif session_state.graph_type == 'X-Y Plotter':
+                    x, y = st.beta_columns(2)
+                    List = all_columns_filtered()
+                    column1 = x.selectbox("Choose X axis Tag", List)
+                    if column1 != "":
+                        column2 = y.multiselect("Choose Y axis Tag", list(col for col in List if col != column1))
+                        if Enquiry(column2):
+                            st.subheader("Choose Y Tag to begin: ")
+                        x_y_graph(df, column1, column2)
+            else:
+                if session_state.graph_type in session_state.Live_exlude_graph:
+                    st.title(session_state.graph_type + " Cannot be plotted on Live graph ")
 
 
 def data_provide() -> DataFrame:

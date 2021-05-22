@@ -143,8 +143,8 @@ def render_graph(df: DataFrame) -> None:
     else:
         if session_state.graph_type == "X-Y Plotter" and len(session_state.column) == 1:
             st.error("Please select atleast Two tags in Tag selection")
-        session_state.column_statistic = st.multiselect("Select Tags For Statistics", all_columns_filtered())
         if session_state.data_type != "Live":
+            session_state.column_statistic = st.multiselect("Select Tags For Statistics", all_columns_filtered())
             if not Enquiry(session_state.column_statistic):
                 display_stats(df)
         if session_state.display_type == "Graph":
@@ -174,7 +174,7 @@ def render_graph(df: DataFrame) -> None:
                         x_y_graph(df, column1, column2)
             else:
                 if session_state.graph_type in session_state.Live_exlude_graph:
-                    st.title(session_state.graph_type + " Cannot be plotted on Live graph ")
+                    st.error(session_state.graph_type + " Cannot be plotted on Live graph ")
 
 
 def data_provide() -> DataFrame:

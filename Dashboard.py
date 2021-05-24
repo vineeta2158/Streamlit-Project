@@ -35,7 +35,9 @@ session_state = SessionState.get(
     column_statistic=[],
     dynamic=False,
     Live_exlude_graph=['Trend Chart', 'Area Chart',
-                       'X-Y Plotter']
+                       'X-Y Plotter'],
+    column1="",
+    column2=[]
 )
 
 ctx = get_report_ctx()
@@ -166,12 +168,13 @@ def render_graph(df: DataFrame) -> None:
                 elif session_state.graph_type == 'X-Y Plotter':
                     x, y = st.beta_columns(2)
                     List = all_columns_filtered()
-                    column1 = x.selectbox("Choose X axis Tag", List)
-                    if column1 != "":
-                        column2 = y.multiselect("Choose Y axis Tag", list(col for col in List if col != column1))
-                        if Enquiry(column2):
+                    session_state.column1 = x.selectbox("Choose X axis Tag", List)
+                    if session_state.column1 != "":
+                        session_state.column2 = y.multiselect("Choose Y axis Tag",
+                                                              list(col for col in List if col != session_state.column1))
+                        if Enquiry(session_state.column2):
                             st.subheader("Choose Y Tag to begin: ")
-                        x_y_graph(df, column1, column2)
+                        x_y_graph(df, session_state.column1, session_state.column2)
             else:
                 if session_state.graph_type in session_state.Live_exlude_graph:
                     st.error(session_state.graph_type + " Cannot be plotted on Live graph ")

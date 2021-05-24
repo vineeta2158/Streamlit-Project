@@ -212,3 +212,29 @@ def x_y_graph(data: DataFrame, column_name_1: str, column_list: list):
     )
     fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
     st.plotly_chart(fig)
+
+
+def x_y_plot(data: DataFrame, column_name_1: str, column_list: list):
+    df = data
+    total_graphs = len(column_list)
+    no_col = int(3)
+    no_row = math.ceil(total_graphs / no_col)
+    spec = list(list({'type': 'domain'} for J in range(no_col)) for I in range(no_row))
+    fig = make_subplots(rows=no_row, cols=no_col)
+    PLOTS = list(go.Scatter(name=col, x=sorted(df[column_name_1].astype(np.float64)),
+                            y=df[col].astype(np.float64),
+                            mode="lines+markers") for col in column_list)
+    k = 0
+    for i in range(1, no_row + 1):
+        for j in range(1, no_col + 1):
+            if len(PLOTS) > k:
+                fig.add_trace(PLOTS[k], row=i, col=j)
+                k += 1
+            fig.update_xaxes(title_text=column_name_1)
+            # fig.update_yaxes(title_text=column_list[k])
+    fig.update_layout(
+        height=600,
+        width=1200,
+    )
+    fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
+    st.plotly_chart(fig)

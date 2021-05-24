@@ -5,7 +5,7 @@ from time_convert import end_time, time_strip, hour_behind
 import streamlit as st
 import pandas as pd
 import datetime
-from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph
+from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph, x_y_plot
 import numpy as np
 from data_selector import select_data
 import SessionState
@@ -173,11 +173,13 @@ def render_graph(df: DataFrame) -> None:
                         session_state.column2 = y.multiselect("Choose Y axis Tag",
                                                               list(col for col in List if col != session_state.column1))
                         if Enquiry(session_state.column2):
-                            st.subheader("Choose Y Tag to begin: ")
-                        x_y_graph(df, session_state.column1, session_state.column2)
+                            st.success("Choose Y Tag to begin    ")
+                        else:
+                            # x_y_graph(df, session_state.column1, session_state.column2)
+                            x_y_plot(df, session_state.column1, session_state.column2)
             else:
                 if session_state.graph_type in session_state.Live_exlude_graph:
-                    st.error(session_state.graph_type + " Cannot be plotted on Live graph ")
+                    st.success(session_state.graph_type + " Cannot be plotted on Live Data Type  ")
 
 
 def data_provide() -> DataFrame:

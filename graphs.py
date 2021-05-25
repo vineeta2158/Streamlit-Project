@@ -33,7 +33,7 @@ def bar_graph(data: DataFrame) -> None:
                       height=600,
                       width=1000,
                       )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)
 
 
 def pie_graph(data: DataFrame) -> None:
@@ -66,10 +66,8 @@ def pie_graph(data: DataFrame) -> None:
     # fig.update_traces(hole=.4, hoverinfo="label+percent+name") # For Doughnut Graph
     fig.update_layout(
         title_text="PIE CHART",
-        height=600,
-        width=1000,
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)
 
 
 def trend_line_chart(data: DataFrame) -> None:
@@ -93,11 +91,7 @@ def trend_line_chart(data: DataFrame) -> None:
     fig = go.Figure(data=Lines, layout=layout)
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")
-    fig.update_layout(
-        height=600,
-        width=1000,
-    )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)
 
 
 def doughnut_graph(data: DataFrame) -> None:
@@ -127,12 +121,7 @@ def doughnut_graph(data: DataFrame) -> None:
                 fig.add_trace(Pies[k], row=i, col=j)
                 k += 1
     fig.update_traces(hole=.4, hoverinfo="label+percent+name")  # For Doughnut Graph
-    fig.update_layout(
-        title_text="DOUGHNUT CHART",
-        height=600,
-        width=1000,
-    )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)
 
 
 def point_chart(data: DataFrame) -> None:
@@ -156,12 +145,8 @@ def point_chart(data: DataFrame) -> None:
     fig = go.Figure(data=Area, layout=layout)
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")
-    fig.update_layout(
-        height=600,
-        width=1000,
-    )
     fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)
 
 
 def area_chart(data: DataFrame) -> None:
@@ -186,11 +171,7 @@ def area_chart(data: DataFrame) -> None:
     fig = go.Figure(data=Lines, layout=layout)
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")
-    fig.update_layout(
-        height=600,
-        width=1000,
-    )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)
 
 
 def x_y_graph(data: DataFrame, column_name_1: str, column_list: list):
@@ -206,12 +187,8 @@ def x_y_graph(data: DataFrame, column_name_1: str, column_list: list):
     fig = go.Figure(data=Line, layout=layout)
     fig.update_xaxes(title_text=column_name_1)
     fig.update_yaxes(title_text="Columns")
-    fig.update_layout(
-        height=600,
-        width=1000,
-    )
     fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)
 
 
 def x_y_plot(data: DataFrame, column_name_1: str, column_list: list):
@@ -232,9 +209,5 @@ def x_y_plot(data: DataFrame, column_name_1: str, column_list: list):
                 k += 1
             fig.update_xaxes(title_text=column_name_1)
             # fig.update_yaxes(title_text=column_list[k])
-    fig.update_layout(
-        height=600,
-        width=1200,
-    )
     fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
-    st.plotly_chart(fig)
+    st.plotly_chart(fig,use_container_width=True)

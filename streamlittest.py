@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import datetime
-from graphs import bar_graph, pie_graph
+from graphs import bar_graph, doughnut_graph
 from plotly.subplots import make_subplots
 import numpy as np
 from data_selector import select_data
@@ -69,7 +69,7 @@ if session_state.display_type == "Graph":
             bar_graph(data=df, st=st, go=go)
 
         if session_state.graph_type == "Pie Chart":
-            pie_graph(data=df, st=st, go=go, make_subplots=make_subplots)
+            doughnut_graph(data=df)
 
     if live.button("live"):
         session_state.data_type = "live"
@@ -79,6 +79,6 @@ if session_state.display_type == "Graph":
             bar_graph(data=df, st=st, go=go)
 
         if session_state.graph_type == "Pie Chart":
-            pie_graph(data=df, st=st, go=go, make_subplots=make_subplots)
+            doughnut_graph(data=df)
 
         # st.rerun()

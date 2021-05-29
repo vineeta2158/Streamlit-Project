@@ -1,84 +1,18 @@
-from pandas.core.frame import DataFrame
+from pandas import DataFrame
 from streamlit import report_thread
-from time_convert import end_time, hour_behind, time_strip
+from Statistics import minimum, maximum, average
+from time_convert import end_time, time_strip
 import streamlit as st
 import pandas as pd
 import datetime
 from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph, x_y_plot
 import numpy as np
 from data_selector import select_data
-import SessionState
-import os
-from streamlit.server.server import Server
-from streamlit.report_thread import get_report_ctx
 
-import statistics
-# Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
-# Page config should run only once while executing code
-st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMIN PORTAL")
-
-session_state = SessionState.get(
-    root_node="",
-    file_name="Node06.csv",
-    start=0,
-    End=0,
-    start_date=hour_behind(),
-    start_time=hour_behind(),
-    end_date=end_time(),
-    end_time=end_time(),
-    display_type="Graph",
-    graph_type="Bar Chart",
-    data_type="Historian",
-    column=[],
-    column_statistic=[],
-    dynamic=False,
-    Live_exlude_graph=['Trend Chart', 'Area Chart',
-                       'X-Y Plotter'],
-    column1="",
-    column2=[]
-)
-# Session state maintains data that defines the state of our program
-# Values are initialized in Session.get
-
-ctx = get_report_ctx()
-# get session id
-session_id = ctx.session_id
-
-# get session
-server = Server.get_current()
-session_info = server._session_info_by_id.get(session_id)
-session = session_info.session
-
-# register watcher
-session._local_sources_watcher._register_watcher(
-    os.path.join(os.path.dirname(__file__), session_state.file_name),
-    'dummy:' + session_state.file_name
-)
-
-
-def main() -> None:
-    session_state.root_node=st.sidebar.selectbox(
-        "Report Type",
-        ["Periodic","Manual"]
-    )
-    trigger_rerun()
-    if session_state.root_node == "Periodic":
-        periodic()
-    else:
-        manual()
-
-
-def periodic():
-    st.title("Periodic is working")
+from state import session_state
 
 
 def manual() -> None:
-    """
-    This is the root function that runs first before any other code.
-    As Streamlit requires proper structured flow of functions main function is required.
-
-    :return: It doesn't return anything
-    """
     if st.sidebar.button("Refresh"):  # If refresh button is clicked!
         trigger_rerun()  # trigger rerun called
 
@@ -121,7 +55,6 @@ def manual() -> None:
                 session_state.end_date,
                 session_state.end_time
             )
-    trigger_rerun() 
     run_app()  # App is finally run after all required session states are gathered
     trigger_rerun()
 
@@ -352,43 +285,3 @@ def data_freshness_check(df: DataFrame) -> DataFrame:
         return df
     else:
         return d2
-
-
-def minimum(df: DataFrame, column_name: str) -> float:
-    """
-    generates minimum value for specified dataframe and column
-
-    :param df: Given Dataframe
-    :param column_name: Name of column
-    :return: Returns a float minimum value
-    """
-    List = list(float(val) for val in df[column_name])
-    return min(List)
-
-
-def maximum(df: DataFrame, column_name: str) -> float:
-    """
-    generates maximum value for specified dataframe and column
-
-    :param df: Given Dataframe
-    :param column_name: Name of column
-    :return: Returns a float maximum value
-    """
-    List = list(float(val) for val in df[column_name])
-    return max(List)
-
-
-def average(df: DataFrame, column_name: str) -> float:
-    """
-    generates average value for specified dataframe and column
-
-    :param df: Given Dataframe
-    :param column_name: Name of column
-    :return: Returns a float average value
-    """
-    List = list(float(val) for val in df[column_name])
-    return statistics.mean(List)
-
-
-if __name__ == "__main__":  # this defines that main function is root function
-    main()

@@ -1,17 +1,17 @@
 from pandas.core.frame import DataFrame
+from streamlit import report_thread
 from time_convert import end_time, hour_behind, time_strip
-from Manual import manual
 import streamlit as st
 import pandas as pd
 import datetime
-from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph
+from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph, x_y_plot
 import numpy as np
 from data_selector import select_data
 import SessionState
 import os
 from streamlit.server.server import Server
-from streamlit.report_thread import ReportThread, get_report_ctx
-from automate import automate
+from streamlit.report_thread import get_report_ctx
+
 import statistics
 # Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
 # Page config should run only once while executing code
@@ -57,6 +57,22 @@ session._local_sources_watcher._register_watcher(
 
 
 def main() -> None:
+    session_state.root_node=st.sidebar.selectbox(
+        "Report Type",
+        ["Periodic","Manual"]
+    )
+    trigger_rerun()
+    if session_state.root_node == "Periodic":
+        periodic()
+    else:
+        manual()
+
+
+def periodic():
+    st.title("Periodic is working")
+
+
+def manual() -> None:
     """
     This is the root function that runs first before any other code.
     As Streamlit requires proper structured flow of functions main function is required.
@@ -105,6 +121,7 @@ def main() -> None:
                 session_state.end_date,
                 session_state.end_time
             )
+    trigger_rerun() 
     run_app()  # App is finally run after all required session states are gathered
     trigger_rerun()
 
@@ -173,11 +190,13 @@ def render_graph(df: DataFrame) -> None:
                         session_state.column2 = y.multiselect("Choose Y axis Tag",
                                                               list(col for col in List if col != session_state.column1))
                         if Enquiry(session_state.column2):
-                            st.subheader("Choose Y Tag to begin: ")
-                        x_y_graph(df, session_state.column1, session_state.column2)
+                            st.success("Choose Y Tag to begin    ")
+                        else:
+                            # x_y_graph(df, session_state.column1, session_state.column2)
+                            x_y_plot(df, session_state.column1, session_state.column2)
             else:
                 if session_state.graph_type in session_state.Live_exlude_graph:
-                    st.error(session_state.graph_type + " Cannot be plotted on Live graph ")
+                    st.success(session_state.graph_type + " Cannot be plotted on Live Data Type  ")
 
 
 def data_provide() -> DataFrame:
@@ -290,7 +309,7 @@ def trigger_rerun() -> None:
 
     :return: Doesnt return anything
     """
-    ReportThread.get_report_ctx()
+    report_thread.get_report_ctx()
 
 
 def data_filter(df: DataFrame) -> DataFrame:

@@ -11,49 +11,57 @@ import SessionState
 import os
 from streamlit.server.server import Server
 from streamlit.report_thread import get_report_ctx
-
+from periodic_engine import period_filter
 import statistics
+session_state = SessionState.get(
+        root_node="",
+        file_name="Node06.csv",
+        start=0,
+        End=0,
+        start_date=hour_behind(),
+        start_time=hour_behind(),
+        end_date=end_time(),
+        end_time=end_time(),
+        display_type="Graph",
+        graph_type="Bar Chart",
+        data_type="Historian",
+        column=[],
+        column_statistic=[],
+        dynamic=False,
+        Live_exlude_graph=['Trend Chart', 'Area Chart',
+                           'X-Y Plotter'],
+        column1="",
+        column2=[],
+        report_type="",
+)
+
+st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMIN PORTAL")
+  
+  
+
+
 # Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
 # Page config should run only once while executing code
-st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMIN PORTAL")
 
-session_state = SessionState.get(
-    root_node="",
-    file_name="Node06.csv",
-    start=0,
-    End=0,
-    start_date=hour_behind(),
-    start_time=hour_behind(),
-    end_date=end_time(),
-    end_time=end_time(),
-    display_type="Graph",
-    graph_type="Bar Chart",
-    data_type="Historian",
-    column=[],
-    column_statistic=[],
-    dynamic=False,
-    Live_exlude_graph=['Trend Chart', 'Area Chart',
-                       'X-Y Plotter'],
-    column1="",
-    column2=[]
-)
+
 # Session state maintains data that defines the state of our program
 # Values are initialized in Session.get
 
-ctx = get_report_ctx()
-# get session id
-session_id = ctx.session_id
+# ctx = get_report_ctx()
+# # get session id
+# session_id = ctx.session_id
 
-# get session
-server = Server.get_current()
-session_info = server._session_info_by_id.get(session_id)
-session = session_info.session
+# # get session
+# server = Server.get_current()
+# session_info = server._session_info_by_id.get(session_id)
+# session = session_info.session
 
-# register watcher
-session._local_sources_watcher._register_watcher(
-    os.path.join(os.path.dirname(__file__), session_state.file_name),
-    'dummy:' + session_state.file_name
-)
+# # register watcher
+# session._local_sources_watcher._register_watcher(
+#     os.path.join(os.path.dirname(__file__), session_state.file_name),
+#     'dummy:' + session_state.file_name
+# )
+
 
 
 def main() -> None:
@@ -61,7 +69,6 @@ def main() -> None:
         "Report Type",
         ["Periodic","Manual"]
     )
-    trigger_rerun()
     if session_state.root_node == "Periodic":
         periodic()
     else:
@@ -69,7 +76,43 @@ def main() -> None:
 
 
 def periodic():
-    st.title("Periodic is working")
+    if st.button("Refresh"):  # If refresh button is clicked!
+        trigger_rerun()  # trigger rerun called
+    session_state.display_type = st.sidebar.selectbox(
+        "Display Type",
+        ['Graph', 'CSV Data', 'OTHERS'],
+        help="This select box is required to select the Type of Previewing the Data"
+    )
+    session_state.period_type = st.sidebar.selectbox(
+        "Select Period",
+        ["Hourly","Weekly","Monthly","Yearly"]
+    )
+    if session_state.display_type == "CSV Data":
+        session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
+    elif session_state.display_type == "Graph":
+        session_state.graph_type = st.sidebar.selectbox(
+            "Type of Chart",
+            ['Bar Chart', 'Pie Chart', 'Trend Chart', 'Doughnut Chart', 'Point Chart', 'Area Chart', 'Table',
+             'X-Y Plotter']
+        )
+    session_state.data_type = "Historian"
+    today = datetime.datetime.now()
+    session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
+    session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
+    session_state.end_date = st.sidebar.date_input('End Date', today)
+    session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
+    session_state.start, session_state.End = time_strip(
+        session_state.start_date,
+        session_state.start_time,
+        session_state.end_date,
+        session_state.end_time
+    )
+    run_periodic() 
+
+
+def run_periodic() -> None:
+    df = period_filter(session_state)
+    render_graph(df)
 
 
 def manual() -> None:
@@ -79,7 +122,8 @@ def manual() -> None:
 
     :return: It doesn't return anything
     """
-    if st.sidebar.button("Refresh"):  # If refresh button is clicked!
+    
+    if st.button("Refresh"):  # If refresh button is clicked!
         trigger_rerun()  # trigger rerun called
 
     # Sets the display_type session state for selected input
@@ -121,9 +165,9 @@ def manual() -> None:
                 session_state.end_date,
                 session_state.end_time
             )
-    trigger_rerun() 
+    # trigger_rerun() 
     run_app()  # App is finally run after all required session states are gathered
-    trigger_rerun()
+    # trigger_rerun()
 
 
 def run_app() -> None:
@@ -309,7 +353,10 @@ def trigger_rerun() -> None:
 
     :return: Doesnt return anything
     """
+    # pass
     report_thread.get_report_ctx()
+    
+    # rerun()
 
 
 def data_filter(df: DataFrame) -> DataFrame:
@@ -392,3 +439,4 @@ def average(df: DataFrame, column_name: str) -> float:
 
 if __name__ == "__main__":  # this defines that main function is root function
     main()
+    

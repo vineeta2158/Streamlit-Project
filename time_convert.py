@@ -1,5 +1,5 @@
 import datetime
-
+import pandas as pd
 
 def double_digit_convert(string2: str) -> str:
     """
@@ -14,6 +14,8 @@ def double_digit_convert(string2: str) -> str:
     else:
         return string2
 
+def datetime_convert(time):
+    return datetime.datetime.strptime(time,"%Y%m%d%H%M%S")
 
 def time_strip(start_date: datetime, start_time: datetime, end_date: datetime, End_time: datetime) -> tuple[int, int]:
     """
@@ -45,6 +47,16 @@ def time_strip(start_date: datetime, start_time: datetime, end_date: datetime, E
     end = end_year + end_month + end_day + end_hour + end_minute + end_second
     return (int(start), int(end))
 
+
+def required_int_timestamp(time: datetime):
+    day = double_digit_convert(str(time.day))
+    month = double_digit_convert(str(time.month))
+    year = double_digit_convert(str(time.year))
+    hour = double_digit_convert(str(time.hour))
+    minute = double_digit_convert(str(time.minute))
+    second = double_digit_convert(str(time.second))
+    timestamp = year + month + day + hour + minute + second
+    return int(timestamp)
 
 def hour_behind() -> datetime:
     """

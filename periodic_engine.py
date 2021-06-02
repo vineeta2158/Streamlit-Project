@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from pandas._libs.tslibs.offsets import CustomBusinessHour, BusinessHour
+
 from time_convert import datetime_convert, required_int_timestamp
 from numpy import datetime64
 import pandas as pd
@@ -13,28 +16,33 @@ def period_filter(session_state):
         pass
     else:
         if session_state.period_type == "Hourly":
-            df = hourly(df)
+            df = period(df, freq="H")
+        elif session_state.period_type == "Daily":
+            df = period(df, freq="D")
         elif session_state.period_type == "Weekly":
-            df = weekly(df)
+            df = period(df, freq="W")
+        elif session_state.period_type == "Per Shift":
+            df = period(df, freq="8H")
+        elif session_state.period_type == "Monthly":
+            df = period(df, freq="M")
+
     return df
 
-def hourly(df: DataFrame):
-    df = df.groupby(pd.Grouper(key="Timestamp",axis=1,freq="H")).mean()
-    df= df.dropna(axis=0)
+
+def period(df: DataFrame, freq: str) -> DataFrame:
+    df = df.groupby(pd.Grouper(key="Timestamp", axis=1, freq=freq)).mean()
+    df = df.dropna(axis=0)
     df.reset_index(inplace=True)
-    df = df.rename(columns = {'index':'Timestamp'})
+    df = df.rename(columns={'index': 'Timestamp'})
     df["Timestamp"] = df["Timestamp"].apply(required_int_timestamp)
-    return df
-    
-def weekly(df):
-    
     return df
 
 
 def fetch_data(session_state):
     df = pd.read_csv(session_state.file_name)
     df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
-    df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (df['Timestamp'].astype(np.int64) <= session_state.End)]
+    df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
+            df['Timestamp'].astype(np.int64) <= session_state.End)]
     # df = data_filter(df,session_state=session_state)# data filter function called
     columns = list(df.columns)
     for col in columns:
@@ -45,8 +53,7 @@ def fetch_data(session_state):
     return df
 
 
-
-def data_filter(df: DataFrame,session_state) -> DataFrame:
+def data_filter(df: DataFrame, session_state) -> DataFrame:
     """
     It Filters data according to column session state.
     converts the provided Dataframe to required column based dataframe
@@ -59,9 +66,9 @@ def data_filter(df: DataFrame,session_state) -> DataFrame:
         return df  # returns entire provided dataframe if no column is selected
     else:
         column_list = ["Timestamp"] + session_state.column  # adds the "Timestamp" column to local column list
-        return df[column_list] 
-    
-    
+        return df[column_list]
+
+
 def Enquiry(lis1: list) -> bool:
     """
     It checks whether the list provided is empty

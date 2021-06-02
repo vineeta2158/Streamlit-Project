@@ -33,7 +33,7 @@ def bar_graph(data: DataFrame) -> None:
                       height=600,
                       width=1000,
                       )
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def pie_graph(data: DataFrame) -> None:
@@ -67,7 +67,7 @@ def pie_graph(data: DataFrame) -> None:
     fig.update_layout(
         title_text="PIE CHART",
     )
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def trend_line_chart(data: DataFrame) -> None:
@@ -91,7 +91,7 @@ def trend_line_chart(data: DataFrame) -> None:
     fig = go.Figure(data=Lines, layout=layout)
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def doughnut_graph(data: DataFrame) -> None:
@@ -121,7 +121,7 @@ def doughnut_graph(data: DataFrame) -> None:
                 fig.add_trace(Pies[k], row=i, col=j)
                 k += 1
     fig.update_traces(hole=.4, hoverinfo="label+percent+name")  # For Doughnut Graph
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def point_chart(data: DataFrame) -> None:
@@ -146,7 +146,7 @@ def point_chart(data: DataFrame) -> None:
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")
     fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def area_chart(data: DataFrame) -> None:
@@ -171,7 +171,7 @@ def area_chart(data: DataFrame) -> None:
     fig = go.Figure(data=Lines, layout=layout)
     fig.update_xaxes(title_text="Timestamp")
     fig.update_yaxes(title_text="Values")
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def x_y_graph(data: DataFrame, column_name_1: str, column_list: list):
@@ -188,13 +188,13 @@ def x_y_graph(data: DataFrame, column_name_1: str, column_list: list):
     fig.update_xaxes(title_text=column_name_1)
     fig.update_yaxes(title_text="Columns")
     fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 def x_y_plot(data: DataFrame, column_name_1: str, column_list: list):
     df = data
     total_graphs = len(column_list)
-    no_col = int(3)
+    no_col = int(1)
     no_row = math.ceil(total_graphs / no_col)
     spec = list(list({'type': 'domain'} for J in range(no_col)) for I in range(no_row))
     fig = make_subplots(rows=no_row, cols=no_col)
@@ -210,4 +210,4 @@ def x_y_plot(data: DataFrame, column_name_1: str, column_list: list):
             fig.update_xaxes(title_text=column_name_1)
             # fig.update_yaxes(title_text=column_list[k])
     fig.update_traces(marker=dict(size=12, line=dict(width=2, color='Black')))
-    st.plotly_chart(fig,use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)

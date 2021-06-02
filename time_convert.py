@@ -1,5 +1,7 @@
 import datetime
 import pandas as pd
+from pandas import DataFrame
+
 
 def double_digit_convert(string2: str) -> str:
     """
@@ -14,8 +16,10 @@ def double_digit_convert(string2: str) -> str:
     else:
         return string2
 
+
 def datetime_convert(time):
-    return datetime.datetime.strptime(time,"%Y%m%d%H%M%S")
+    return datetime.datetime.strptime(time, "%Y%m%d%H%M%S")
+
 
 def time_strip(start_date: datetime, start_time: datetime, end_date: datetime, End_time: datetime) -> tuple[int, int]:
     """
@@ -58,6 +62,7 @@ def required_int_timestamp(time: datetime):
     timestamp = year + month + day + hour + minute + second
     return int(timestamp)
 
+
 def hour_behind() -> datetime:
     """
     returns time one hour behind from current time
@@ -85,3 +90,8 @@ def today() -> datetime:
     :return: current time in datetime data type
     """
     return datetime.datetime.now()
+
+
+def readable_time(df: DataFrame) -> DataFrame:
+    print(df.dtypes)
+    return df

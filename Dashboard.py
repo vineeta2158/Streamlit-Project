@@ -1,6 +1,8 @@
+import csv
+
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import end_time, hour_behind, time_strip
+from time_convert import end_time, hour_behind, time_strip, readable_time
 import streamlit as st
 import pandas as pd
 import datetime
@@ -13,31 +15,30 @@ from streamlit.server.server import Server
 from streamlit.report_thread import get_report_ctx
 from periodic_engine import period_filter
 import statistics
+
 session_state = SessionState.get(
-        root_node="",
-        file_name="Node06.csv",
-        start=0,
-        End=0,
-        start_date=hour_behind(),
-        start_time=hour_behind(),
-        end_date=end_time(),
-        end_time=end_time(),
-        display_type="Graph",
-        graph_type="Bar Chart",
-        data_type="Historian",
-        column=[],
-        column_statistic=[],
-        dynamic=False,
-        Live_exlude_graph=['Trend Chart', 'Area Chart',
-                           'X-Y Plotter'],
-        column1="",
-        column2=[],
-        report_type="",
+    root_node="",
+    file_name="Node06_revision1.csv",
+    start=0,
+    End=0,
+    start_date=hour_behind(),
+    start_time=hour_behind(),
+    end_date=end_time(),
+    end_time=end_time(),
+    display_type="Graph",
+    graph_type="Bar Chart",
+    data_type="Historian",
+    column=[],
+    column_statistic=[],
+    dynamic=False,
+    Live_exlude_graph=['Trend Chart', 'Area Chart',
+                       'X-Y Plotter'],
+    column1="",
+    column2=[],
+    report_type="",
 )
 
 st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMIN PORTAL")
-  
-  
 
 
 # Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
@@ -63,11 +64,10 @@ st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMI
 # )
 
 
-
 def main() -> None:
-    session_state.root_node=st.sidebar.selectbox(
+    session_state.root_node = st.sidebar.selectbox(
         "Report Type",
-        ["Periodic","Manual"]
+        ["Periodic", "Manual"]
     )
     if session_state.root_node == "Periodic":
         periodic()
@@ -85,7 +85,7 @@ def periodic():
     )
     session_state.period_type = st.sidebar.selectbox(
         "Select Period",
-        ["Hourly","Weekly","Monthly","Yearly"]
+        ["Hourly", "Daily", "Weekly", "Per Shift", "Monthly", "Yearly"]
     )
     if session_state.display_type == "CSV Data":
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
@@ -107,7 +107,7 @@ def periodic():
         session_state.end_date,
         session_state.end_time
     )
-    run_periodic() 
+    run_periodic()
 
 
 def run_periodic() -> None:
@@ -122,7 +122,7 @@ def manual() -> None:
 
     :return: It doesn't return anything
     """
-    
+
     if st.button("Refresh"):  # If refresh button is clicked!
         trigger_rerun()  # trigger rerun called
 
@@ -165,7 +165,7 @@ def manual() -> None:
                 session_state.end_date,
                 session_state.end_time
             )
-    # trigger_rerun() 
+    # trigger_rerun()
     run_app()  # App is finally run after all required session states are gathered
     # trigger_rerun()
 
@@ -201,6 +201,7 @@ def render_graph(df: DataFrame) -> None:
     :param df: Dataframe for which the graph is to be plotted
     :return: It returns nothing. It just plots and displays graph
     """
+    df = readable_time(df)
     if df.empty:
         st.title("No Data to display")
     else:
@@ -241,6 +242,10 @@ def render_graph(df: DataFrame) -> None:
             else:
                 if session_state.graph_type in session_state.Live_exlude_graph:
                     st.success(session_state.graph_type + " Cannot be plotted on Live Data Type  ")
+        if session_state.display_type == "CSV Data":
+            st.title(session_state.file_name)
+            df = data_provide()
+            st.dataframe(df)
 
 
 def data_provide() -> DataFrame:
@@ -355,7 +360,7 @@ def trigger_rerun() -> None:
     """
     # pass
     report_thread.get_report_ctx()
-    
+
     # rerun()
 
 
@@ -387,7 +392,7 @@ def display_stats(df: DataFrame) -> None:
         maxi = maximum(df, name)
         aver = average(df, name)
         st.header('Statistics for %s :' % name)
-        st.subheader(' Minimum : `%d`  Maximum : `%d`  Average : `%d` \n ' % (
+        st.subheader(' Minimum : `%.2f`  Maximum : `%.2f`  Average : `%.2f` \n ' % (
             mini, maxi, aver
         ))
 
@@ -439,4 +444,3 @@ def average(df: DataFrame, column_name: str) -> float:
 
 if __name__ == "__main__":  # this defines that main function is root function
     main()
-    

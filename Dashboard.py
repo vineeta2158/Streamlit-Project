@@ -1,3 +1,4 @@
+from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
 from time_convert import datetime_convert, end_time, hour_behind, required_format_timestamp, time_strip
@@ -6,7 +7,6 @@ import pandas as pd
 import datetime
 from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph, x_y_plot
 import numpy as np
-from data_selector import select_data
 import SessionState
 from periodic_engine import period_filter
 import statistics
@@ -306,8 +306,11 @@ def data_provide_raw() -> DataFrame:
                     ]
             return df
         else:
-            df = select_data(Historian=False, live=True, file_path=session_state.file_name)
-            return df
+            # df = select_data(Historian=False, live=True, file_path=session_state.file_name)
+            df = pd.read_csv(session_state.file_path)
+            df = df.loc[(df['Timestamp'] != "Timestamp")]
+            row_1 = df.tail(1)
+            return row_1
     elif session_state.display_type == "CSV Data":
         df = pd.read_csv(session_state.file_name)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
@@ -406,40 +409,6 @@ def data_freshness_check(df: DataFrame) -> DataFrame:
         return d2
 
 
-def minimum(df: DataFrame, column_name: str) -> float:
-    """
-    generates minimum value for specified dataframe and column
-
-    :param df: Given Dataframe
-    :param column_name: Name of column
-    :return: Returns a float minimum value
-    """
-    List = list(float(val) for val in df[column_name])
-    return min(List)
-
-
-def maximum(df: DataFrame, column_name: str) -> float:
-    """
-    generates maximum value for specified dataframe and column
-
-    :param df: Given Dataframe
-    :param column_name: Name of column
-    :return: Returns a float maximum value
-    """
-    List = list(float(val) for val in df[column_name])
-    return max(List)
-
-
-def average(df: DataFrame, column_name: str) -> float:
-    """
-    generates average value for specified dataframe and column
-
-    :param df: Given Dataframe
-    :param column_name: Name of column
-    :return: Returns a float average value
-    """
-    List = list(float(val) for val in df[column_name])
-    return statistics.mean(List)
 
 
 if __name__ == "__main__":  # this defines that main function is root function

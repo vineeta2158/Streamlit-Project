@@ -25,7 +25,6 @@ def period_filter(session_state):
             df = period(df, freq="8H")
         elif session_state.period_type == "Monthly":
             df = period(df, freq="M")
-
     return df
 
 
@@ -34,10 +33,8 @@ def period(df: DataFrame, freq: str) -> DataFrame:
     df = df.dropna(axis=0)
     df.reset_index(inplace=True)
     df = df.rename(columns={'index': 'Timestamp'})
-    df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     return df
 
-@st.cache
 def fetch_data(session_state):
     df = pd.read_csv(session_state.file_name)
     df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
@@ -48,8 +45,7 @@ def fetch_data(session_state):
     for col in columns:
         if col != "Timestamp":
             df[col] = df[col].apply(pd.to_numeric, errors='ignore')
-        else:
-            df[col] = df[col].apply(datetime_convert)
+    df["Timestamp"] = df["Timestamp"].apply(datetime_convert)
     return df
 
 

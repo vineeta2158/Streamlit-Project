@@ -80,7 +80,7 @@ def periodic():
     )
     session_state.period_type = st.sidebar.selectbox(
         "Select Period",
-        ["Hourly", "Daily", "Weekly", "Per Shift", "Monthly", "Yearly"]
+        ["Hourly", "Per Shift", "Daily", "Weekly", "Fortnight", "Monthly", "Quarterly", "Half Year", "Annual"]
     )
     if session_state.display_type == "CSV Data":
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
@@ -233,8 +233,8 @@ def render_graph(df: DataFrame) -> None:
                         if Enquiry(session_state.column2):
                             st.success("Choose Y Tag to begin    ")
                         else:
-                            x1,x2 = st.beta_columns(2)
-                            if x1.button("X-Y graph"): 
+                            x1, x2 = st.beta_columns(2)
+                            if x1.button("X-Y graph"):
                                 x_y_graph(df, session_state.column1, session_state.column2)
                             if x2.button("X-Y plots"):
                                 x_y_plot(df, session_state.column1, session_state.column2)
@@ -282,7 +282,7 @@ def data_provide() -> DataFrame:
         df = data_freshness_check(df)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
         df = data_filter(df)
-        df["Timestamp"] = df["Timestamp"].apply(datetime_convert)  
+        df["Timestamp"] = df["Timestamp"].apply(datetime_convert)
         return df
 
 
@@ -408,8 +408,6 @@ def data_freshness_check(df: DataFrame) -> DataFrame:
         return df
     else:
         return d2
-
-
 
 
 if __name__ == "__main__":  # this defines that main function is root function

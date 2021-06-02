@@ -90,6 +90,7 @@ def periodic():
             ['Bar Chart', 'Pie Chart', 'Trend Chart', 'Doughnut Chart', 'Point Chart', 'Area Chart', 'Table',
              'X-Y Plotter']
         )
+        session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
     session_state.data_type = "Historian"
     today = datetime.datetime.now()
     session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)

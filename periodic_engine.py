@@ -40,7 +40,7 @@ def fetch_data(session_state):
     df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
     df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
             df['Timestamp'].astype(np.int64) <= session_state.End)]
-    # df = data_filter(df,session_state=session_state)# data filter function called
+    df = data_filter(df,session_state=session_state)# data filter function called
     columns = list(df.columns)
     for col in columns:
         if col != "Timestamp":
@@ -62,7 +62,8 @@ def data_filter(df: DataFrame, session_state) -> DataFrame:
         return df  # returns entire provided dataframe if no column is selected
     else:
         column_list = ["Timestamp"] + session_state.column  # adds the "Timestamp" column to local column list
-        return df[column_list]
+        df = df[column_list]
+        return df
 
 
 def Enquiry(lis1: list) -> bool:

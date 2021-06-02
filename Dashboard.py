@@ -1,8 +1,6 @@
-import csv
-
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import end_time, hour_behind, time_strip, readable_time
+from time_convert import datetime_convert, end_time, hour_behind, required_format_timestamp, time_strip
 import streamlit as st
 import pandas as pd
 import datetime
@@ -10,9 +8,6 @@ from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point
 import numpy as np
 from data_selector import select_data
 import SessionState
-import os
-from streamlit.server.server import Server
-from streamlit.report_thread import get_report_ctx
 from periodic_engine import period_filter
 import statistics
 
@@ -201,7 +196,7 @@ def render_graph(df: DataFrame) -> None:
     :param df: Dataframe for which the graph is to be plotted
     :return: It returns nothing. It just plots and displays graph
     """
-    df = readable_time(df)
+    df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     if df.empty:
         st.title("No Data to display")
     else:
@@ -237,8 +232,11 @@ def render_graph(df: DataFrame) -> None:
                         if Enquiry(session_state.column2):
                             st.success("Choose Y Tag to begin    ")
                         else:
-                            # x_y_graph(df, session_state.column1, session_state.column2)
-                            x_y_plot(df, session_state.column1, session_state.column2)
+                            x1,x2 = st.beta_columns(2)
+                            if x1.button("X-Y graph"): 
+                                x_y_graph(df, session_state.column1, session_state.column2)
+                            if x2.button("X-Y plots"):
+                                x_y_plot(df, session_state.column1, session_state.column2)
             else:
                 if session_state.graph_type in session_state.Live_exlude_graph:
                     st.success(session_state.graph_type + " Cannot be plotted on Live Data Type  ")
@@ -269,6 +267,7 @@ def data_provide() -> DataFrame:
                     (df['Timestamp'].astype(np.int64) >= session_state.start)
                     & (df['Timestamp'].astype(np.int64) <= session_state.End)
                     ]
+            df["Timestamp"] = df["Timestamp"].apply(datetime_convert)
             return df
         else:
             # df = select_data(Historian=False, live=True, file_path=session_state.file_name)
@@ -282,6 +281,7 @@ def data_provide() -> DataFrame:
         df = data_freshness_check(df)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
         df = data_filter(df)
+        df["Timestamp"] = df["Timestamp"].apply(datetime_convert)  
         return df
 
 

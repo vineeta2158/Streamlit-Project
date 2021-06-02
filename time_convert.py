@@ -52,15 +52,17 @@ def time_strip(start_date: datetime, start_time: datetime, end_date: datetime, E
     return (int(start), int(end))
 
 
-def required_int_timestamp(time: datetime):
+def required_format_timestamp(time: datetime):
     day = double_digit_convert(str(time.day))
     month = double_digit_convert(str(time.month))
     year = double_digit_convert(str(time.year))
     hour = double_digit_convert(str(time.hour))
     minute = double_digit_convert(str(time.minute))
     second = double_digit_convert(str(time.second))
-    timestamp = year + month + day + hour + minute + second
-    return int(timestamp)
+    # timestamp = year + month + day + hour + minute + second
+    # return int(timestamp)
+    timestamp = day + "/" + month + "/" + year + " " + hour + ":" + minute + ":" + second
+    return timestamp 
 
 
 def hour_behind() -> datetime:
@@ -92,6 +94,4 @@ def today() -> datetime:
     return datetime.datetime.now()
 
 
-def readable_time(df: DataFrame) -> DataFrame:
-    print(df.dtypes)
-    return df
+

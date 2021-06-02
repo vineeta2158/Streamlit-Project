@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pandas._libs.tslibs.offsets import CustomBusinessHour, BusinessHour
 
-from time_convert import datetime_convert, required_int_timestamp
+from time_convert import datetime_convert, required_format_timestamp
 from numpy import datetime64
 import pandas as pd
 from pandas.core.frame import DataFrame
@@ -34,10 +34,10 @@ def period(df: DataFrame, freq: str) -> DataFrame:
     df = df.dropna(axis=0)
     df.reset_index(inplace=True)
     df = df.rename(columns={'index': 'Timestamp'})
-    df["Timestamp"] = df["Timestamp"].apply(required_int_timestamp)
+    df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     return df
 
-
+@st.cache
 def fetch_data(session_state):
     df = pd.read_csv(session_state.file_name)
     df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data

@@ -24,7 +24,7 @@ def period_filter(session_state):
         elif session_state.period_type == "Weekly":
             df = period(df, freq="W")
         elif session_state.period_type == "Fortnight":
-            df = period(df, freq="2W")
+            df = period(df, freq="15D")
         elif session_state.period_type == "Monthly":
             df = period(df, freq="M")
         elif session_state.period_type == "Quarterly":
@@ -47,7 +47,8 @@ def period(df: DataFrame, freq: str) -> DataFrame:
 def fetch_data(session_state):
     df = pd.read_csv(session_state.file_name)
     df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
-    df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
+    if session_state.period_type == "Hourly":
+        df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
             df['Timestamp'].astype(np.int64) <= session_state.End)]
     df = data_filter(df, session_state=session_state)  # data filter function called
     columns = list(df.columns)

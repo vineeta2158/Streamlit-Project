@@ -8,7 +8,7 @@ import datetime
 from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph, x_y_plot
 import numpy as np
 import SessionState
-from periodic_engine import period_filter
+from periodic_engine import fetch_data, period_filter
 import statistics
 
 session_state = SessionState.get(
@@ -31,6 +31,7 @@ session_state = SessionState.get(
     column1="",
     column2=[],
     report_type="",
+    period_timeframe="",
 )
 
 st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMIN PORTAL")
@@ -75,14 +76,31 @@ def periodic():
         trigger_rerun()  # trigger rerun called
     session_state.display_type = st.sidebar.selectbox(
         "Display Type",
-        ['Graph', 'CSV Data', 'OTHERS'],
+        ['Graph', 'Base File', 'Others'],
         help="This select box is required to select the Type of Previewing the Data"
     )
-    session_state.period_type = st.sidebar.selectbox(
-        "Select Period",
-        ["Hourly", "Per Shift", "Daily", "Weekly", "Fortnight", "Monthly", "Quarterly", "Half Year", "Annual"]
+    session_state.period_timeframe = st.sidebar.selectbox(
+        "Periodic Report",
+        ["Yearly","Monthly","Daily"]
     )
-    if session_state.display_type == "CSV Data":
+    
+    if session_state.period_timeframe == "Yearly":
+        session_state.period_type = st.sidebar.selectbox(
+            "Select Period",
+            [ "Quarterly", "Half Year", "Annual"]
+        )
+    elif session_state.period_timeframe == "Monthly":
+        session_state.period_type = st.sidebar.selectbox(
+            "Select Period",
+            [ "Weekly", "Fortnight", "Monthly"]
+        )
+    elif session_state.period_timeframe == "Daily":
+        session_state.period_type = st.sidebar.selectbox(
+            "Select Period",
+            ["Hourly", "Per Shift", "Daily"]
+        )
+        
+    if session_state.display_type == "Base File":
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
     elif session_state.display_type == "Graph":
         session_state.graph_type = st.sidebar.selectbox(
@@ -93,16 +111,17 @@ def periodic():
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
     session_state.data_type = "Historian"
     today = datetime.datetime.now()
-    session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
-    session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-    session_state.end_date = st.sidebar.date_input('End Date', today)
-    session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
-    session_state.start, session_state.End = time_strip(
-        session_state.start_date,
-        session_state.start_time,
-        session_state.end_date,
-        session_state.end_time
-    )
+    if session_state.period_type == "Hourly":
+        session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
+        session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
+        session_state.end_date = st.sidebar.date_input('End Date', today)
+        session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
+        session_state.start, session_state.End = time_strip(
+            session_state.start_date,
+            session_state.start_time,
+            session_state.end_date,
+            session_state.end_time
+        )
     run_periodic()
 
 
@@ -125,11 +144,11 @@ def manual() -> None:
     # Sets the display_type session state for selected input
     session_state.display_type = st.sidebar.selectbox(
         "Display Type",
-        ['Graph', 'CSV Data', 'OTHERS'],
+        ['Graph', 'Base File', 'Others'],
         help="This select box is required to select the Type of Previewing the Data"
     )
 
-    if session_state.display_type == "CSV Data":
+    if session_state.display_type == "Base File":
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
     elif session_state.display_type == "Graph":
         session_state.graph_type = st.sidebar.selectbox(
@@ -181,11 +200,11 @@ def run_app() -> None:
         else:  # Live data
             df = data_provide()
             render_graph(df)
-    elif session_state.display_type == "CSV Data":
+    elif session_state.display_type == "Base File":
         st.title(session_state.file_name)
         df = data_provide()
         st.dataframe(df)  # renders the dataframe
-    elif session_state.display_type == "OTHERS":
+    elif session_state.display_type == "Others":
         st.title("Yet to be Developed :)")
 
 
@@ -241,9 +260,10 @@ def render_graph(df: DataFrame) -> None:
             else:
                 if session_state.graph_type in session_state.Live_exlude_graph:
                     st.success(session_state.graph_type + " Cannot be plotted on Live Data Type  ")
-        if session_state.display_type == "CSV Data":
+        if session_state.display_type == "Base File":
             st.title(session_state.file_name)
             df = data_provide()
+            df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
             st.dataframe(df)
 
 
@@ -277,7 +297,7 @@ def data_provide() -> DataFrame:
             row_1 = df.tail(1)
             row_1 = data_filter(row_1)
             return row_1
-    elif session_state.display_type == "CSV Data":
+    elif session_state.display_type == "Base File":
         df = pd.read_csv(session_state.file_name)
         df = data_freshness_check(df)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
@@ -312,7 +332,7 @@ def data_provide_raw() -> DataFrame:
             df = df.loc[(df['Timestamp'] != "Timestamp")]
             row_1 = df.tail(1)
             return row_1
-    elif session_state.display_type == "CSV Data":
+    elif session_state.display_type == "Base File":
         df = pd.read_csv(session_state.file_name)
         df = df.loc[(df['Timestamp'] != "Timestamp")]
         return df

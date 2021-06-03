@@ -81,25 +81,25 @@ def periodic():
     )
     session_state.period_timeframe = st.sidebar.selectbox(
         "Periodic Report",
-        ["Yearly","Monthly","Daily"]
+        ["Yearly", "Monthly", "Daily"]
     )
-    
+
     if session_state.period_timeframe == "Yearly":
         session_state.period_type = st.sidebar.selectbox(
             "Select Period",
-            [ "Quarterly", "Half Year", "Annual"]
+            ["Quarterly", "Half Year", "Annual"]
         )
     elif session_state.period_timeframe == "Monthly":
         session_state.period_type = st.sidebar.selectbox(
             "Select Period",
-            [ "Weekly", "Fortnight", "Monthly"]
+            ["Weekly", "Fortnight", "Monthly"]
         )
     elif session_state.period_timeframe == "Daily":
         session_state.period_type = st.sidebar.selectbox(
             "Select Period",
             ["Hourly", "Per Shift", "Daily"]
         )
-        
+
     if session_state.display_type == "Base File":
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
     elif session_state.display_type == "Graph":
@@ -109,6 +109,9 @@ def periodic():
              'X-Y Plotter']
         )
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
+    elif session_state.display_type == "Others":
+        st.title("Yet to be Developed :)")
+
     session_state.data_type = "Historian"
     today = datetime.datetime.now()
     if session_state.period_type == "Hourly":
@@ -222,7 +225,7 @@ def render_graph(df: DataFrame) -> None:
     else:
         if session_state.graph_type == "X-Y Plotter" and len(session_state.column) == 1:
             st.error("Please select atleast Two tags in Tag selection")
-        if session_state.data_type != "Live":
+        if session_state.data_type != "Live" and session_state.display_type != "Others":
             session_state.column_statistic = st.multiselect("Select Tags For Statistics", all_columns_filtered())
             if not Enquiry(session_state.column_statistic):
                 display_stats(df)

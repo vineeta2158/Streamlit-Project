@@ -47,9 +47,14 @@ def period(df: DataFrame, freq: str) -> DataFrame:
 def fetch_data(session_state):
     df = pd.read_csv(session_state.file_name)
     df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
+    
     if session_state.period_type == "Hourly":
         df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
-            df['Timestamp'].astype(np.int64) <= session_state.End)]
+                df['Timestamp'].astype(np.int64) <= session_state.End)]
+    elif session_state.period_type == "Daily" or session_state.period_type == "Per Shift":
+        df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start_time) & (
+                df['Timestamp'].astype(np.int64) <= session_state.end_time)]
+
     df = data_filter(df, session_state=session_state)  # data filter function called
     columns = list(df.columns)
     for col in columns:

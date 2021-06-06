@@ -3,6 +3,22 @@ import pandas as pd
 from pandas import DataFrame
 
 
+months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+]
+
+
 def double_digit_convert(string2: str) -> str:
     """
     converts single digit string to double digit
@@ -94,4 +110,18 @@ def today() -> datetime:
     return datetime.datetime.now()
 
 
+def year_list(df):
+    year_list = list(dict.fromkeys(df["Timestamp"].apply(year_return)))
+    return year_list
 
+
+def year_return(time: datetime):
+    return time.year
+
+def month_list(df):
+    month_list = list(dict.fromkeys(df["Timestamp"].apply(month_return)))
+    return month_list
+
+
+def month_return(time: datetime):
+    return months[time.month - 1 ]

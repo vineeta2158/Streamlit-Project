@@ -1,7 +1,7 @@
 from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import datetime_convert, end_time, hour_behind, month_list, month_return, required_format_timestamp, time_strip, year_list, year_return
+from time_convert import datetime_convert, end_time, hour_behind, month_list, month_return, quarter_list, required_format_timestamp, time_strip, year_list, year_return
 import streamlit as st
 import pandas as pd
 import datetime
@@ -143,8 +143,17 @@ def run_periodic() -> None:
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
         session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
         df = year_filter(df)
+        if session_state.period_type == "Quarterly":
+            session_state.quarter_type = st.sidebar.multiselect("Choose Quarter",quarter_list(df))
+            df = quarter_filter(df)
     render_graph(df)
 
+
+def quarter_filter(df):
+    df = df.loc[
+        (df["Timestamp"].isin(session_state.quarter_type))
+    ]
+    return df    
 
 
 def year_month_filter(df):

@@ -18,6 +18,37 @@ months = [
     "December",
 ]
 
+quarter_1 = [
+    "January",
+    "February",
+    "March",
+]
+
+quarter_2 = [
+    "April",
+    "May",
+    "June",
+]
+
+quarter_3 = [
+    "July",
+    "August",
+    "September",
+]
+
+quarter_4 = [
+    "October",
+    "November",
+    "December",
+]
+
+Quarters = [
+    "Quarter 1",
+    "Quarter 2",
+    "Quarter 3",
+    "Quarter 4"
+]
+
 
 def double_digit_convert(string2: str) -> str:
     """
@@ -93,16 +124,19 @@ def time_strip_only_day(start_date: datetime,  end_date: datetime) -> tuple[int,
 
 
 def required_format_timestamp(time: datetime):
-    day = double_digit_convert(str(time.day))
-    month = double_digit_convert(str(time.month))
-    year = double_digit_convert(str(time.year))
-    hour = double_digit_convert(str(time.hour))
-    minute = double_digit_convert(str(time.minute))
-    second = double_digit_convert(str(time.second))
-    # timestamp = year + month + day + hour + minute + second
-    # return int(timestamp)
-    timestamp = day + "/" + month + "/" + year + " " + hour + ":" + minute + ":" + second
-    return timestamp 
+    if time in Quarters:
+        return time
+    else:
+        day = double_digit_convert(str(time.day))
+        month = double_digit_convert(str(time.month))
+        year = double_digit_convert(str(time.year))
+        hour = double_digit_convert(str(time.hour))
+        minute = double_digit_convert(str(time.minute))
+        second = double_digit_convert(str(time.second))
+        # timestamp = year + month + day + hour + minute + second
+        # return int(timestamp)
+        timestamp = day + "/" + month + "/" + year + " " + hour + ":" + minute + ":" + second
+        return timestamp 
 
 
 def hour_behind() -> datetime:
@@ -149,3 +183,21 @@ def month_list(df):
 
 def month_return(time: datetime):
     return months[time.month - 1 ]
+
+
+def quarter_list(df):
+    df["Timestamp"] = df["Timestamp"].apply(month_return)
+    df["Timestamp"] = df["Timestamp"].apply(quarter_return)
+    quarters = list(dict.fromkeys(df["Timestamp"]))
+    return quarters
+
+def quarter_return(month_name):
+    outstring=" "
+    if month_name in quarter_1:
+        return "Quarter 1"
+    elif month_name in quarter_2:
+        return "Quarter 2"
+    elif month_name in quarter_3:
+        return "Quarter 3"
+    elif month_name in quarter_4:
+        return "Quarter 4"

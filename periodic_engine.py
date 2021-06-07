@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pandas._libs.tslibs.offsets import CustomBusinessHour, BusinessHour
 
-from time_convert import datetime_convert, required_format_timestamp
+from time_convert import datetime_convert, required_format_timestamp, time_strip_only_day
 from numpy import datetime64
 import pandas as pd
 from pandas.core.frame import DataFrame
@@ -51,9 +51,10 @@ def fetch_data(session_state):
     if session_state.period_type == "Hourly":
         df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
                 df['Timestamp'].astype(np.int64) <= session_state.End)]
-    elif session_state.period_type == "Daily" or session_state.period_type == "Per Shift":
-        df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start_time) & (
-                df['Timestamp'].astype(np.int64) <= session_state.end_time)]
+    elif session_state.period_type in ["Daily","Per Shift"]:
+        # session_state.start, session_state.End = time_strip_only_day(session_state.start_time, session_state.end_time)
+        df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
+                df['Timestamp'].astype(np.int64) <= session_state.End)]
 
     df = data_filter(df, session_state=session_state)  # data filter function called
     columns = list(df.columns)

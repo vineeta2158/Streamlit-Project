@@ -68,6 +68,30 @@ def time_strip(start_date: datetime, start_time: datetime, end_date: datetime, E
     return (int(start), int(end))
 
 
+def time_strip_only_day(start_date: datetime,  end_date: datetime) -> tuple[int, int]:
+    """
+    It strips time into integer tuple of start and end time
+
+    :param start_date: start date selected
+    :param start_time: start time selected
+    :param end_date: end date selected
+    :param End_time: end time selected
+    :return: returns the packed integer values of converted datetime
+    """
+    start_day = double_digit_convert(str(start_date.day))
+    start_month = double_digit_convert(str(start_date.month))
+    start_year = double_digit_convert(str(start_date.year))
+
+    end_day = double_digit_convert(str(end_date.day))
+    end_month = double_digit_convert(str(end_date.month))
+    end_year = double_digit_convert(str(end_date.year))
+
+
+    start = start_year + start_month + start_day 
+    end = end_year + end_month + end_day 
+    return (int(start), int(end))
+
+
 def required_format_timestamp(time: datetime):
     day = double_digit_convert(str(time.day))
     month = double_digit_convert(str(time.month))

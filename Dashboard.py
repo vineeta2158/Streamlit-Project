@@ -119,9 +119,10 @@ def periodic():
     
     if session_state.period_type  in ["Hourly", "Per Shift", "Daily"]:
         session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
-        session_state.end_date = st.sidebar.date_input('End Date', today)
         if session_state.period_type == "Hourly":
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
+        session_state.end_date = st.sidebar.date_input('End Date', today)
+        if session_state.period_type == "Hourly":
             session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
         session_state.start, session_state.End = time_strip(
                 session_state.start_date,

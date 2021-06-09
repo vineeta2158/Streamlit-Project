@@ -86,21 +86,6 @@ def periodic():
         ["Hourly", "Per Shift", "Daily","Weekly", "Fortnight", "Monthly","Quarterly", "Half Year", "Annual"]
     )
 
-    # if session_state.period_timeframe == "Yearly":
-    #     session_state.period_type = st.sidebar.selectbox(
-    #         "Select Period",
-    #         ["Quarterly", "Half Year", "Annual"]
-    #     )
-    # elif session_state.period_timeframe == "Monthly":
-    #     session_state.period_type = st.sidebar.selectbox(
-    #         "Select Period",
-    #         ["Weekly", "Fortnight", "Monthly"]
-    #     )
-    # elif session_state.period_timeframe == "Daily":
-    #     session_state.period_type = st.sidebar.selectbox(
-    #         "Select Period",
-    #         ["Hourly", "Per Shift", "Daily"]
-    #     )
 
     if session_state.display_type == "Base File":
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
@@ -169,7 +154,6 @@ def year_month_filter(df):
             (df["Timestamp"].apply(year_return) == session_state.year_input) 
             & (df["Timestamp"].apply(month_return).isin(session_state.month_input)) 
         ]
-        # df = month_check(df)
     return df
 
 def month_check(df):
@@ -234,9 +218,7 @@ def manual() -> None:
                 session_state.end_date,
                 session_state.end_time
             )
-    # trigger_rerun()
     run_app()  # App is finally run after all required session states are gathered
-    # trigger_rerun()
 
 
 def run_app() -> None:

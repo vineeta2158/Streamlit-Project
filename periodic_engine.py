@@ -30,7 +30,7 @@ def period_filter(session_state):
         elif session_state.period_type == "Quarterly":
             df = period(df, freq="3M")
         elif session_state.period_type == "Half Year":
-            df = period(df, freq="6M")
+            df = period(df, freq="M")
         elif session_state.period_type == "Annual":
             df = period(df, freq="Y")
     return df
@@ -41,6 +41,18 @@ def period(df: DataFrame, freq: str) -> DataFrame:
     df = df.dropna(axis=0)
     df.reset_index(inplace=True)
     df = df.rename(columns={'index': 'Timestamp'})
+    return df
+
+def half_year_type_return(time):
+    if time.month < 7:
+        return "1st Half"
+    else:
+        return "2nd Half"
+
+def half_year_merge(df: DataFrame):
+    print(df)
+    df["Timestamp"] = df["Timestamp"].apply(half_year_type_return)
+    df = df.groupby(by=df["Timestamp"]).mean() 
     return df
 
 

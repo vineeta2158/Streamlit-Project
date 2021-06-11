@@ -8,7 +8,7 @@ import datetime
 from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph, x_y_plot
 import numpy as np
 import SessionState
-from periodic_engine import fetch_data, period_filter
+from periodic_engine import fetch_data, half_year_merge, half_year_type_return, period_filter
 import statistics
 
 session_state = SessionState.get(
@@ -132,11 +132,24 @@ def run_periodic() -> None:
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
         session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
         df = year_filter(df) 
+        if session_state.period_type == "Half Year":
+            session_state.Half_year = st.sidebar.selectbox("Choose Half",["1st Half", "2nd Half"])
+            df = half_filter(df)
         if session_state.period_type == "Quarterly":
             session_state.quarter_type = st.sidebar.multiselect("Choose Quarter",quarter_list(df))
             df = quarter_filter(df)
     render_graph(df)
 
+
+def half_filter(df: DataFrame):
+    df["Timestamp"] = df["Timestamp"].apply(half_year_type_return)
+    df = df.groupby(by=df["Timestamp"]).mean()
+    df.reset_index(inplace=True)
+    df = df.rename(columns={'index': 'Timestamp'})
+    df = df.loc[
+        (df["Timestamp"] == session_state.Half_year)
+    ]
+    return df
 
 
 def week_filter(df):
@@ -266,7 +279,7 @@ def render_graph(df: DataFrame) -> None:
     
     if session_state.period_type == "Annual":
         df["Timestamp"] = df["Timestamp"].apply(year_return)
-    elif session_state.period_type == "Weekly":
+    elif session_state.period_type in ["Weekly","Half Year"]:
         pass
     else:
         df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)

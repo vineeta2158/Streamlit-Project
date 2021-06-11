@@ -128,7 +128,7 @@ def run_periodic() -> None:
         df= year_month_filter(df)
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
         session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
-        df = year_filter(df)
+        df = year_filter(df) 
         if session_state.period_type == "Quarterly":
             session_state.quarter_type = st.sidebar.multiselect("Choose Quarter",quarter_list(df))
             df = quarter_filter(df)
@@ -252,7 +252,11 @@ def render_graph(df: DataFrame) -> None:
     :param df: Dataframe for which the graph is to be plotted
     :return: It returns nothing. It just plots and displays graph
     """
-    df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
+    
+    if session_state.period_type == "Annual":
+        df["Timestamp"] = df["Timestamp"].apply(year_return)
+    else:
+        df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     if df.empty:
         st.title("No Data to display")
     else:

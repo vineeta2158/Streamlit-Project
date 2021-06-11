@@ -50,6 +50,13 @@ Quarters = [
 ]
 
 
+Week1 = list(day for day in range(1,8))
+Week2 = list(day for day in range(8,15))
+Week3 = list(day for day in range(15,22))
+Week4 = list(day for day in range(22,30))
+Week5 = list(day for day in range(30,32))
+
+
 def double_digit_convert(string2: str) -> str:
     """
     converts single digit string to double digit
@@ -184,7 +191,21 @@ def month_list(df):
 def month_return(time: datetime):
     return months[time.month - 1 ]
 
+def week_return(time:datetime):
+    if time.day in Week1:
+        return "Week 1"
+    elif time.day in Week2:
+        return "Week 2"
+    elif time.day in Week3:
+        return "Week 3"
+    elif time.day in Week4:
+        return "Week 4"
+    elif time.day in Week5:
+        return "Week 5"
 
+def week_list(df):
+    week_list = list(dict.fromkeys(df["Timestamp"].apply(week_return)))
+    return week_list
 def quarter_list(df):
     df["Timestamp"] = df["Timestamp"].apply(month_return)
     df["Timestamp"] = df["Timestamp"].apply(quarter_return)

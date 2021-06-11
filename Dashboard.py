@@ -1,7 +1,7 @@
 from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import datetime_convert, end_time, hour_behind, month_list, month_return, quarter_list, required_format_timestamp, time_strip, year_list, year_return
+from time_convert import datetime_convert, end_time, hour_behind, month_list, month_return, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
 import streamlit as st
 import pandas as pd
 import datetime
@@ -126,6 +126,9 @@ def run_periodic() -> None:
         session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
         session_state.month_input = st.sidebar.multiselect("Choose Month",month_list(df))
         df= year_month_filter(df)
+        if session_state.period_type == "Weekly":
+            session_state.week_number = st.sidebar.selectbox("Choose Week",week_list(df))
+            df = week_filter(df)
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
         session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
         df = year_filter(df) 
@@ -134,6 +137,14 @@ def run_periodic() -> None:
             df = quarter_filter(df)
     render_graph(df)
 
+
+
+def week_filter(df):
+    df["Timestamp"] = df["Timestamp"].apply(week_return)
+    df = df.loc[
+        (df["Timestamp"] == session_state.week_number)
+    ]
+    return df
 
 def quarter_filter(df):
     df = df.loc[
@@ -255,6 +266,8 @@ def render_graph(df: DataFrame) -> None:
     
     if session_state.period_type == "Annual":
         df["Timestamp"] = df["Timestamp"].apply(year_return)
+    elif session_state.period_type == "Weekly":
+        pass
     else:
         df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     if df.empty:

@@ -1,7 +1,7 @@
 from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import datetime_convert, end_time, hour_behind, month_list, month_return, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
+from time_convert import datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, month_list, month_return, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
 import streamlit as st
 import pandas as pd
 import datetime
@@ -127,6 +127,12 @@ def run_periodic() -> None:
         df  = year_filter(df)
         session_state.month_input = st.sidebar.multiselect("Choose Month",month_list(df))
         df= year_month_filter(df)
+        if session_state.period_type == "Fortnight":
+            if Enquiry(session_state.month_input):
+                pass
+            else:
+                session_state.fortnight_input = st.sidebar.selectbox("Choose Half", fortnight_list(df))
+                df = fortnight_filter(df)
         if session_state.period_type == "Weekly":
             session_state.week_number = st.sidebar.multiselect("Choose Week",week_list(df))
             df = week_filter(df)
@@ -140,6 +146,17 @@ def run_periodic() -> None:
             session_state.quarter_type = st.sidebar.multiselect("Choose Quarter",quarter_list(df))
             df = quarter_filter(df)
     render_graph(df)
+
+
+def fortnight_filter(df: DataFrame):
+    df["Timestamp"] = df["Timestamp"].apply(fortnight_return)
+    df = df.groupby(by=df["Timestamp"]).mean()
+    df.reset_index(inplace=True)
+    df = df.rename(columns={'index': 'Timestamp'})
+    df = df.loc[
+        (df["Timestamp"] == session_state.fortnight_input)
+    ]
+    return df
 
 
 def half_filter(df: DataFrame):
@@ -284,7 +301,7 @@ def render_graph(df: DataFrame) -> None:
     
     if session_state.period_type == "Annual":
         df["Timestamp"] = df["Timestamp"].apply(year_return)
-    elif session_state.period_type in ["Weekly","Half Year"]:
+    elif session_state.period_type in ["Weekly","Half Year","Fortnight"]:
         pass
     elif session_state.period_type == "Monthly":
         df["Timestamp"] = df["Timestamp"].apply(month_return)

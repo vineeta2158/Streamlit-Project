@@ -24,7 +24,7 @@ def period_filter(session_state):
         elif session_state.period_type == "Weekly":
             df = period(df, freq="W")
         elif session_state.period_type == "Fortnight":
-            df = period(df, freq="15D")
+            df = period(df, freq="D")
         elif session_state.period_type == "Monthly":
             df = period(df, freq="M")
         elif session_state.period_type == "Quarterly":

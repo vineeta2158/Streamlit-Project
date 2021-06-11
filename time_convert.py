@@ -191,6 +191,19 @@ def month_list(df):
 def month_return(time: datetime):
     return months[time.month - 1 ]
 
+def fortnight_return(time):
+    month_name = month_return(time)
+    if time.day < 16:
+        return month_name + " 1st half"
+    else:
+        return month_name + " 2nd half"
+
+
+
+def fortnight_list(df):
+    fortnight_list = list(dict.fromkeys(df["Timestamp"].apply(fortnight_return)))
+    return fortnight_list
+
 def week_return(time:datetime):
     if time.day in Week1:
         return "Week 1"

@@ -124,10 +124,11 @@ def run_periodic() -> None:
     df = period_filter(session_state)
     if session_state.period_type  in ["Weekly", "Fortnight", "Monthly"]:
         session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
+        df  = year_filter(df)
         session_state.month_input = st.sidebar.multiselect("Choose Month",month_list(df))
         df= year_month_filter(df)
         if session_state.period_type == "Weekly":
-            session_state.week_number = st.sidebar.selectbox("Choose Week",week_list(df))
+            session_state.week_number = st.sidebar.multiselect("Choose Week",week_list(df))
             df = week_filter(df)
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
         session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
@@ -153,10 +154,14 @@ def half_filter(df: DataFrame):
 
 
 def week_filter(df):
-    df["Timestamp"] = df["Timestamp"].apply(week_return)
-    df = df.loc[
-        (df["Timestamp"] == session_state.week_number)
-    ]
+    
+    if Enquiry(session_state.week_number):
+        st.error("Please choose a Week")
+    else:
+        df["Timestamp"] = df["Timestamp"].apply(week_return)
+        df = df.loc[
+            (df["Timestamp"].isin(session_state.week_number))
+        ]
     return df
 
 def quarter_filter(df):
@@ -281,6 +286,8 @@ def render_graph(df: DataFrame) -> None:
         df["Timestamp"] = df["Timestamp"].apply(year_return)
     elif session_state.period_type in ["Weekly","Half Year"]:
         pass
+    elif session_state.period_type == "Monthly":
+        df["Timestamp"] = df["Timestamp"].apply(month_return)
     else:
         df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     if df.empty:

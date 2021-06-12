@@ -1,7 +1,8 @@
 from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, month_list, month_return, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
+from time_convert import datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, month_list, \
+    month_return, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
 import streamlit as st
 import pandas as pd
 import datetime
@@ -83,9 +84,8 @@ def periodic():
     )
     session_state.period_type = st.sidebar.selectbox(
         "Periodic Report",
-        ["Hourly", "Per Shift", "Daily","Weekly", "Fortnight", "Monthly","Quarterly", "Half Year", "Annual"]
+        ["Hourly", "Per Shift", "Daily", "Weekly", "Fortnight", "Monthly", "Quarterly", "Half Year", "Annual"]
     )
-
 
     if session_state.display_type == "Base File":
         session_state.column = st.sidebar.multiselect("Tag Selection", all_columns())
@@ -101,8 +101,8 @@ def periodic():
 
     session_state.data_type = "Historian"
     today = datetime.datetime.now()
-    
-    if session_state.period_type  in ["Hourly", "Per Shift", "Daily"]:
+
+    if session_state.period_type in ["Hourly", "Per Shift", "Daily"]:
         session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
         if session_state.period_type == "Hourly":
             session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
@@ -110,23 +110,22 @@ def periodic():
         if session_state.period_type == "Hourly":
             session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
         session_state.start, session_state.End = time_strip(
-                session_state.start_date,
-                session_state.start_time,
-                session_state.end_date,
-                session_state.end_time
+            session_state.start_date,
+            session_state.start_time,
+            session_state.end_date,
+            session_state.end_time
         )
-        
-    
+
     run_periodic()
 
 
 def run_periodic() -> None:
     df = period_filter(session_state)
-    if session_state.period_type  in ["Weekly", "Fortnight", "Monthly"]:
-        session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
-        df  = year_filter(df)
-        session_state.month_input = st.sidebar.multiselect("Choose Month",month_list(df))
-        df= year_month_filter(df)
+    if session_state.period_type in ["Weekly", "Fortnight", "Monthly"]:
+        session_state.year_input = st.sidebar.selectbox("Choose Year", year_list(df))  # Give function call point here
+        df = year_filter(df)
+        session_state.month_input = st.sidebar.multiselect("Choose Month", month_list(df))
+        df = year_month_filter(df)
         if session_state.period_type == "Fortnight":
             if Enquiry(session_state.month_input):
                 pass
@@ -134,16 +133,16 @@ def run_periodic() -> None:
                 session_state.fortnight_input = st.sidebar.selectbox("Choose Half", fortnight_list(df))
                 df = fortnight_filter(df)
         if session_state.period_type == "Weekly":
-            session_state.week_number = st.sidebar.multiselect("Choose Week",week_list(df))
+            session_state.week_number = st.sidebar.multiselect("Choose Week", week_list(df))
             df = week_filter(df)
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
-        session_state.year_input = st.sidebar.selectbox("Choose Year",year_list(df)) # Give function call point here
-        df = year_filter(df) 
+        session_state.year_input = st.sidebar.selectbox("Choose Year", year_list(df))  # Give function call point here
+        df = year_filter(df)
         if session_state.period_type == "Half Year":
-            session_state.Half_year = st.sidebar.selectbox("Choose Half",["1st Half", "2nd Half"])
+            session_state.Half_year = st.sidebar.multiselect("Choose Half", ["1st Half", "2nd Half"])
             df = half_filter(df)
         if session_state.period_type == "Quarterly":
-            session_state.quarter_type = st.sidebar.multiselect("Choose Quarter",quarter_list(df))
+            session_state.quarter_type = st.sidebar.multiselect("Choose Quarter", quarter_list(df))
             df = quarter_filter(df)
     render_graph(df)
 
@@ -165,13 +164,12 @@ def half_filter(df: DataFrame):
     df.reset_index(inplace=True)
     df = df.rename(columns={'index': 'Timestamp'})
     df = df.loc[
-        (df["Timestamp"] == session_state.Half_year)
+        (df["Timestamp"].isin(session_state.Half_year))
     ]
     return df
 
 
 def week_filter(df):
-    
     if Enquiry(session_state.week_number):
         st.error("Please choose a Week")
     else:
@@ -181,38 +179,42 @@ def week_filter(df):
         ]
     return df
 
+
 def quarter_filter(df):
     df = df.loc[
         (df["Timestamp"].isin(session_state.quarter_type))
     ]
-    return df    
+    return df
 
 
 def year_month_filter(df):
     if Enquiry(session_state.month_input):
         st.error("Please choose a month")
         df = df.loc[
-            (df["Timestamp"].apply(year_return) == session_state.year_input) 
+            (df["Timestamp"].apply(year_return) == session_state.year_input)
         ]
-     
+
     else:
         df = df.loc[
-            (df["Timestamp"].apply(year_return) == session_state.year_input) 
-            & (df["Timestamp"].apply(month_return).isin(session_state.month_input)) 
-        ]
+            (df["Timestamp"].apply(year_return) == session_state.year_input)
+            & (df["Timestamp"].apply(month_return).isin(session_state.month_input))
+            ]
     return df
+
 
 def month_check(df):
     df = df.loc[
-            (df["Timestamp"].apply(month_return).isin(session_state.month_input)) 
-        ]
+        (df["Timestamp"].apply(month_return).isin(session_state.month_input))
+    ]
     return df
+
 
 def year_filter(df):
     df = df.loc[
-        (df["Timestamp"].apply(year_return) == session_state.year_input) 
+        (df["Timestamp"].apply(year_return) == session_state.year_input)
     ]
     return df
+
 
 def manual() -> None:
     """
@@ -298,10 +300,10 @@ def render_graph(df: DataFrame) -> None:
     :param df: Dataframe for which the graph is to be plotted
     :return: It returns nothing. It just plots and displays graph
     """
-    
+
     if session_state.period_type == "Annual":
         df["Timestamp"] = df["Timestamp"].apply(year_return)
-    elif session_state.period_type in ["Weekly","Half Year","Fortnight"]:
+    elif session_state.period_type in ["Weekly", "Half Year", "Fortnight"]:
         pass
     elif session_state.period_type == "Monthly":
         df["Timestamp"] = df["Timestamp"].apply(month_return)

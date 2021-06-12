@@ -130,7 +130,7 @@ def run_periodic() -> None:
             if Enquiry(session_state.month_input):
                 pass
             else:
-                session_state.fortnight_input = st.sidebar.selectbox("Choose Half", fortnight_list(df))
+                session_state.fortnight_input = st.sidebar.multiselect("Choose Half", fortnight_list(df))
                 df = fortnight_filter(df)
         if session_state.period_type == "Weekly":
             session_state.week_number = st.sidebar.multiselect("Choose Week", week_list(df))
@@ -148,24 +148,29 @@ def run_periodic() -> None:
 
 
 def fortnight_filter(df: DataFrame):
+    if Enquiry(session_state.week_number):
+        st.error("Please choose a Half")
     df["Timestamp"] = df["Timestamp"].apply(fortnight_return)
     df = df.groupby(by=df["Timestamp"]).mean()
     df.reset_index(inplace=True)
     df = df.rename(columns={'index': 'Timestamp'})
     df = df.loc[
-        (df["Timestamp"] == session_state.fortnight_input)
+        (df["Timestamp"].isin(session_state.fortnight_input))
     ]
     return df
 
 
 def half_filter(df: DataFrame):
-    df["Timestamp"] = df["Timestamp"].apply(half_year_type_return)
-    df = df.groupby(by=df["Timestamp"]).mean()
-    df.reset_index(inplace=True)
-    df = df.rename(columns={'index': 'Timestamp'})
-    df = df.loc[
-        (df["Timestamp"].isin(session_state.Half_year))
-    ]
+    if Enquiry(session_state.week_number):
+        st.error("Please choose a Half")
+    else:
+        df["Timestamp"] = df["Timestamp"].apply(half_year_type_return)
+        df = df.groupby(by=df["Timestamp"]).mean()
+        df.reset_index(inplace=True)
+        df = df.rename(columns={'index': 'Timestamp'})
+        df = df.loc[
+            (df["Timestamp"].isin(session_state.Half_year))
+        ]
     return df
 
 

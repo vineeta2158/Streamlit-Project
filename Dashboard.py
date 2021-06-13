@@ -1,15 +1,15 @@
 from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, month_list, \
-    month_return, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
+from time_convert import datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, hour_list, hour_rename, month_list, month_rename, \
+    month_return, pershift_list, pershift_time_converter, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
 import streamlit as st
 import pandas as pd
 import datetime
 from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point_chart, area_chart, x_y_graph, x_y_plot
 import numpy as np
 import SessionState
-from periodic_engine import fetch_data, half_year_merge, half_year_type_return, period_filter
+from periodic_engine import Enquiry, fetch_data, half_year_merge, half_year_type_return, period_filter
 import statistics
 
 session_state = SessionState.get(
@@ -103,18 +103,26 @@ def periodic():
     today = datetime.datetime.now()
 
     if session_state.period_type in ["Hourly", "Per Shift", "Daily"]:
-        session_state.start_date = st.sidebar.date_input('Start Date', session_state.start_date)
         if session_state.period_type == "Hourly":
-            session_state.start_time = st.sidebar.time_input("Start Time", session_state.start_time)
-        session_state.end_date = st.sidebar.date_input('End Date', today)
-        if session_state.period_type == "Hourly":
-            session_state.end_time = st.sidebar.time_input("End Time", session_state.end_time)
+            session_state.start_date = st.sidebar.date_input('Start Date')
+            session_state.start_time = pd.to_datetime(st.sidebar.selectbox("Start Time", hour_list()))
+            session_state.end_date = st.sidebar.date_input('End Date')
+            session_state.end_time = pd.to_datetime(st.sidebar.selectbox("End Time", hour_list(),help="End Date should be greater than start Date"))
+        if session_state.period_type == "Per Shift":
+            session_state.start_date = st.sidebar.date_input('Start Date')
+            session_state.end_date = st.sidebar.date_input('End Date', help= "End Date should not be same as start date")
+            session_state.start_time = datetime.time(0,0,0)
+            session_state.end_time = datetime.time(0,0,0)
+            if session_state.start_date == session_state.end_date:
+                st.error("End Date should be greater than Start Date")
+            
         session_state.start, session_state.End = time_strip(
             session_state.start_date,
             session_state.start_time,
             session_state.end_date,
             session_state.end_time
         )
+
 
     run_periodic()
 
@@ -128,7 +136,7 @@ def run_periodic() -> None:
         df = year_month_filter(df)
         if session_state.period_type == "Fortnight":
             if Enquiry(session_state.month_input):
-                pass
+                df = pd.DataFrame()
             else:
                 session_state.fortnight_input = st.sidebar.multiselect("Choose Half", fortnight_list(df))
                 df = fortnight_filter(df)
@@ -139,30 +147,53 @@ def run_periodic() -> None:
         session_state.year_input = st.sidebar.selectbox("Choose Year", year_list(df))  # Give function call point here
         df = year_filter(df)
         if session_state.period_type == "Half Year":
-            session_state.Half_year = st.sidebar.multiselect("Choose Half", ["1st Half", "2nd Half"])
+            session_state.Half_year = st.sidebar.multiselect("Choose Half", half_year_list(df))
             df = half_filter(df)
         if session_state.period_type == "Quarterly":
             session_state.quarter_type = st.sidebar.multiselect("Choose Quarter", quarter_list(df))
             df = quarter_filter(df)
+    else:
+        if session_state.period_type == "Per Shift":
+            session_state.per_shift_input = st.sidebar.multiselect("Choose Shift",pershift_list(df))
+            df = per_shift_filter(df)
     render_graph(df)
 
 
-def fortnight_filter(df: DataFrame):
-    if Enquiry(session_state.week_number):
+def per_shift_filter(df):
+    if Enquiry(session_state.per_shift_input):
         st.error("Please choose a Half")
-    df["Timestamp"] = df["Timestamp"].apply(fortnight_return)
+    df["Timestamp"] = df["Timestamp"].apply(pershift_time_converter)
     df = df.groupby(by=df["Timestamp"]).mean()
     df.reset_index(inplace=True)
     df = df.rename(columns={'index': 'Timestamp'})
     df = df.loc[
-        (df["Timestamp"].isin(session_state.fortnight_input))
+        (df["Timestamp"].isin(session_state.per_shift_input))
     ]
     return df
 
 
-def half_filter(df: DataFrame):
-    if Enquiry(session_state.week_number):
+def fortnight_filter(df: DataFrame):
+    if Enquiry(session_state.month_input):
+        st.error("Please choose a Month")
+        df = pd.DataFrame()
+    elif Enquiry(session_state.fortnight_input):
         st.error("Please choose a Half")
+        df = pd.DataFrame()
+    else:
+        df["Timestamp"] = df["Timestamp"].apply(fortnight_return)
+        df = df.groupby(by=df["Timestamp"]).mean()
+        df.reset_index(inplace=True)
+        df = df.rename(columns={'index': 'Timestamp'})
+        df = df.loc[
+            (df["Timestamp"].isin(session_state.fortnight_input))
+        ]
+    return df
+
+
+def half_filter(df: DataFrame):
+    if Enquiry(session_state.Half_year):
+        st.error("Please choose a Half")
+        df = pd.DataFrame()
     else:
         df["Timestamp"] = df["Timestamp"].apply(half_year_type_return)
         df = df.groupby(by=df["Timestamp"]).mean()
@@ -173,15 +204,22 @@ def half_filter(df: DataFrame):
         ]
     return df
 
+def half_year_list(df):
+    half_list = list(dict.fromkeys(df["Timestamp"].apply(half_year_type_return)))
+    return half_list
 
-def week_filter(df):
+def week_filter(df):        
     if Enquiry(session_state.week_number):
         st.error("Please choose a Week")
+        df = pd.DataFrame()
     else:
-        df["Timestamp"] = df["Timestamp"].apply(week_return)
-        df = df.loc[
-            (df["Timestamp"].isin(session_state.week_number))
-        ]
+            df["Timestamp"] = df["Timestamp"].apply(week_return)
+            df = df.groupby(by=df["Timestamp"]).mean()
+            df.reset_index(inplace=True)
+            df = df.rename(columns={'index': 'Timestamp'})
+            df = df.loc[
+                (df["Timestamp"].isin(session_state.week_number))
+            ]
     return df
 
 
@@ -308,10 +346,12 @@ def render_graph(df: DataFrame) -> None:
 
     if session_state.period_type == "Annual":
         df["Timestamp"] = df["Timestamp"].apply(year_return)
-    elif session_state.period_type in ["Weekly", "Half Year", "Fortnight"]:
+    elif session_state.period_type in ["Weekly", "Half Year", "Fortnight","Per Shift","Quarterly"]:
         pass
     elif session_state.period_type == "Monthly":
-        df["Timestamp"] = df["Timestamp"].apply(month_return)
+        df["Timestamp"] = df["Timestamp"].apply(month_rename)
+    elif session_state.period_type == "Hourly":
+        df["Timestamp"] = df["Timestamp"].apply(hour_rename)
     else:
         df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     if df.empty:
@@ -425,7 +465,7 @@ def data_provide_raw() -> DataFrame:
             return df
         else:
             # df = select_data(Historian=False, live=True, file_path=session_state.file_name)
-            df = pd.read_csv(session_state.file_path)
+            df = pd.read_csv(session_state.file_name)
             df = df.loc[(df['Timestamp'] != "Timestamp")]
             row_1 = df.tail(1)
             return row_1

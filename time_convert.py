@@ -173,7 +173,20 @@ def today() -> datetime:
     :return: current time in datetime data type
     """
     return datetime.datetime.now()
+    
 
+def hour_rename(time):
+    year = str(time.year)
+    day = str(time.day)
+    month_name = month_return(time)
+    hour = time.hour
+    hour_plus_1 = time.hour+1
+    name = day + " " + month_name + " " + year + " " + double_digit_convert(str(hour)) + ":00 - " + double_digit_convert(str(hour_plus_1)) + ":00"
+    return name
+
+def hour_list():
+    hours = list(datetime.time(hr,0).strftime('%H:%M') for hr in range(0,24))
+    return hours
 
 def year_list(df):
     year_list = list(dict.fromkeys(df["Timestamp"].apply(year_return)))
@@ -187,51 +200,78 @@ def month_list(df):
     month_list = list(dict.fromkeys(df["Timestamp"].apply(month_return)))
     return month_list
 
+def month_rename(time):
+    year = str(time.year)
+    month_name = month_return(time)
+    name = year + " " + month_name
+    return name 
 
 def month_return(time: datetime):
     return months[time.month - 1 ]
 
 def fortnight_return(time):
+    year = str(time.year)
     month_name = month_return(time)
     if time.day < 16:
-        return month_name + " 1st half"
+        return year + " " + month_name + " 1st half"
     else:
-        return month_name + " 2nd half"
+        return year + " " + month_name + " 2nd half"
 
+def pershift_time_converter(time: datetime):
+    month_name = month_return(time)
+    day = str(time.day)
+    shift = shift_return(time)
+    return month_name + " " + day + " " + shift
 
+def pershift_list(df):
+    pershift = list(dict.fromkeys(df["Timestamp"].apply(pershift_time_converter)))
+    return pershift
+
+def shift_return(time: datetime):
+    if time.hour < 8 :
+        return "Shift 1"
+    elif time.hour  >= 8 and time.hour < 16:
+        return "Shift 2"
+    else:
+        return "Shift 3"
 
 def fortnight_list(df):
     fortnight_list = list(dict.fromkeys(df["Timestamp"].apply(fortnight_return)))
     return fortnight_list
 
 def week_return(time:datetime):
+    month_name = month_return(time)
+    year = str(time.year)
+    name = year + " " + month_name
     if time.day in Week1:
-        return "Week 1"
+        return name + " Week 1"
     elif time.day in Week2:
-        return "Week 2"
+        return name + " Week 2"
     elif time.day in Week3:
-        return "Week 3"
+        return name + " Week 3"
     elif time.day in Week4:
-        return "Week 4"
-    elif time.day in Week5:
-        return "Week 5"
+        return name + " Week 4"
+    else:
+        return name + " Week 5"
 
 def week_list(df):
     week_list = list(dict.fromkeys(df["Timestamp"].apply(week_return)))
     return week_list
+
+
 def quarter_list(df):
-    df["Timestamp"] = df["Timestamp"].apply(month_return)
     df["Timestamp"] = df["Timestamp"].apply(quarter_return)
     quarters = list(dict.fromkeys(df["Timestamp"]))
     return quarters
 
-def quarter_return(month_name):
-    outstring=" "
+def quarter_return(time: datetime):
+    year = str(time.year)
+    month_name = month_return(time)
     if month_name in quarter_1:
-        return "Quarter 1"
+        return year + " Quarter 1"
     elif month_name in quarter_2:
-        return "Quarter 2"
+        return year + " Quarter 2"
     elif month_name in quarter_3:
-        return "Quarter 3"
+        return year + " Quarter 3"
     elif month_name in quarter_4:
-        return "Quarter 4"
+        return year + " Quarter 4"

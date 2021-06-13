@@ -22,7 +22,7 @@ def period_filter(session_state):
         elif session_state.period_type == "Daily":
             df = period(df, freq="D")
         elif session_state.period_type == "Weekly":
-            df = period(df, freq="W")
+            df = period(df, freq="D")
         elif session_state.period_type == "Fortnight":
             df = period(df, freq="D")
         elif session_state.period_type == "Monthly":
@@ -44,10 +44,11 @@ def period(df: DataFrame, freq: str) -> DataFrame:
     return df
 
 def half_year_type_return(time):
+    year = str(time.year)
     if time.month < 7:
-        return "1st Half"
+        return year + " 1st Half"
     else:
-        return "2nd Half"
+        return year + " 2nd Half"
 
 def half_year_merge(df: DataFrame):
     print(df)
@@ -59,7 +60,6 @@ def half_year_merge(df: DataFrame):
 def fetch_data(session_state):
     df = pd.read_csv(session_state.file_name)
     df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
-    
     if session_state.period_type == "Hourly":
         df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
                 df['Timestamp'].astype(np.int64) <= session_state.End)]

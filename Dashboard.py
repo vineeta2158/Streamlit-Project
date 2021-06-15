@@ -1,7 +1,7 @@
 from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, hour_list, hour_rename, month_list, month_rename, \
+from time_convert import daily_rename, datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, hour_list, hour_rename, month_list, month_rename, \
     month_return, pershift_list, pershift_time_converter, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
 import streamlit as st
 import pandas as pd
@@ -108,7 +108,7 @@ def periodic():
             session_state.start_time = pd.to_datetime(st.sidebar.selectbox("Start Time", hour_list()))
             session_state.end_date = st.sidebar.date_input('End Date')
             session_state.end_time = pd.to_datetime(st.sidebar.selectbox("End Time", hour_list(),help="End Date should be greater than start Date"))
-        if session_state.period_type == "Per Shift":
+        if session_state.period_type in ["Per Shift","Daily"]:
             session_state.start_date = st.sidebar.date_input('Start Date')
             session_state.end_date = st.sidebar.date_input('End Date', help= "End Date should not be same as start date")
             session_state.start_time = datetime.time(0,0,0)
@@ -355,8 +355,10 @@ def render_graph(df: DataFrame) -> None:
         df["Timestamp"] = df["Timestamp"].apply(month_rename)
     elif session_state.period_type == "Hourly":
         df["Timestamp"] = df["Timestamp"].apply(hour_rename)
+    elif session_state.period_type == "Daily":
+        df["Timestamp"] = df["Timestamp"].apply(daily_rename)
     else:
-        df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
+        df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)    
     if df.empty:
         st.title("No Data to display")
     else:

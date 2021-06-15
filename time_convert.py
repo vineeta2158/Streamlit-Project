@@ -185,6 +185,10 @@ def hour_rename(time):
     name = day + " " + month_name + " " + year + " " + double_digit_convert(str(hour)) + ":00 - " + double_digit_convert(str(hour_plus_1)) + ":00"
     return name
 
+def daily_rename(time):
+    name = "{0}/{1}/{2}".format(str(time.day),month_return(time),str(time.year))
+    return name
+
 def hour_list():
     hours = list(datetime.time(hr,0).strftime('%H:%M') for hr in range(0,24))
     return hours

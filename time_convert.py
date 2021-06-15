@@ -1,4 +1,5 @@
 import datetime
+import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
@@ -223,7 +224,13 @@ def pershift_time_converter(time: datetime):
     shift = shift_return(time)
     return month_name + " " + day + " " + shift
 
-def pershift_list(df):
+def pershift_list(df,session_state):
+    df = df.loc[
+        (df["Timestamp"] >= np.datetime64(session_state.start_date)) 
+    ]
+    df = df.loc[
+        (df["Timestamp"] <= np.datetime64(session_state.end_date)) 
+    ]
     pershift = list(dict.fromkeys(df["Timestamp"].apply(pershift_time_converter)))
     return pershift
 

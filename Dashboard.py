@@ -154,21 +154,24 @@ def run_periodic() -> None:
             df = quarter_filter(df)
     else:
         if session_state.period_type == "Per Shift":
-            session_state.per_shift_input = st.sidebar.multiselect("Choose Shift",pershift_list(df))
+            session_state.per_shift_input = st.sidebar.multiselect("Choose Shift",pershift_list(df,session_state))
             df = per_shift_filter(df)
     render_graph(df)
 
 
 def per_shift_filter(df):
     if Enquiry(session_state.per_shift_input):
-        st.error("Please choose a Half")
-    df["Timestamp"] = df["Timestamp"].apply(pershift_time_converter)
-    df = df.groupby(by=df["Timestamp"]).mean()
-    df.reset_index(inplace=True)
-    df = df.rename(columns={'index': 'Timestamp'})
-    df = df.loc[
-        (df["Timestamp"].isin(session_state.per_shift_input))
-    ]
+        st.error("Please choose a Shift")
+    if df.empty:
+        pass
+    else:
+        df["Timestamp"] = df["Timestamp"].apply(pershift_time_converter)
+        df = df.groupby(by=df["Timestamp"]).mean()
+        df.reset_index(inplace=True)
+        df = df.rename(columns={'index': 'Timestamp'})
+        df = df.loc[
+            (df["Timestamp"].isin(session_state.per_shift_input))
+        ]
     return df
 
 

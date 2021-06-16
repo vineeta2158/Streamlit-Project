@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-
 months = [
     "January",
     "February",
@@ -50,12 +49,11 @@ Quarters = [
     "Quarter 4"
 ]
 
-
-Week1 = list(day for day in range(1,8))
-Week2 = list(day for day in range(8,15))
-Week3 = list(day for day in range(15,22))
-Week4 = list(day for day in range(22,30))
-Week5 = list(day for day in range(30,32))
+Week1 = list(day for day in range(1, 8))
+Week2 = list(day for day in range(8, 15))
+Week3 = list(day for day in range(15, 22))
+Week4 = list(day for day in range(22, 30))
+Week5 = list(day for day in range(30, 32))
 
 
 def double_digit_convert(string2: str) -> str:
@@ -107,7 +105,7 @@ def time_strip(start_date: datetime, start_time: datetime, end_date: datetime, E
     return (int(start), int(end))
 
 
-def time_strip_only_day(start_date: datetime,  end_date: datetime) -> tuple[int, int]:
+def time_strip_only_day(start_date: datetime, end_date: datetime) -> tuple[int, int]:
     """
     It strips time into integer tuple of start and end time
 
@@ -125,9 +123,8 @@ def time_strip_only_day(start_date: datetime,  end_date: datetime) -> tuple[int,
     end_month = double_digit_convert(str(end_date.month))
     end_year = double_digit_convert(str(end_date.year))
 
-
-    start = start_year + start_month + start_day 
-    end = end_year + end_month + end_day 
+    start = start_year + start_month + start_day
+    end = end_year + end_month + end_day
     return (int(start), int(end))
 
 
@@ -144,7 +141,7 @@ def required_format_timestamp(time: datetime):
         # timestamp = year + month + day + hour + minute + second
         # return int(timestamp)
         timestamp = day + "/" + month + "/" + year + " " + hour + ":" + minute + ":" + second
-        return timestamp 
+        return timestamp
 
 
 def hour_behind() -> datetime:
@@ -174,24 +171,28 @@ def today() -> datetime:
     :return: current time in datetime data type
     """
     return datetime.datetime.now()
-    
+
 
 def hour_rename(time):
     year = str(time.year)
     day = str(time.day)
     month_name = month_return(time)
     hour = time.hour
-    hour_plus_1 = time.hour+1
-    name = day + " " + month_name + " " + year + " " + double_digit_convert(str(hour)) + ":00 - " + double_digit_convert(str(hour_plus_1)) + ":00"
+    hour_plus_1 = time.hour + 1
+    name = day + " " + month_name + " " + year + " " + double_digit_convert(
+        str(hour)) + ":00 - " + double_digit_convert(str(hour_plus_1)) + ":00"
     return name
+
 
 def daily_rename(time):
-    name = "{0}/{1}/{2}".format(str(time.day),month_return(time),str(time.year))
+    name = "{0}/{1}/{2}".format(str(time.year), month_return(time), str(time.day))
     return name
 
+
 def hour_list():
-    hours = list(datetime.time(hr,0).strftime('%H:%M') for hr in range(0,24))
+    hours = list(datetime.time(hr, 0).strftime('%H:%M') for hr in range(0, 24))
     return hours
+
 
 def year_list(df):
     year_list = list(dict.fromkeys(df["Timestamp"].apply(year_return)))
@@ -201,18 +202,22 @@ def year_list(df):
 def year_return(time: datetime):
     return time.year
 
+
 def month_list(df):
     month_list = list(dict.fromkeys(df["Timestamp"].apply(month_return)))
     return month_list
+
 
 def month_rename(time):
     year = str(time.year)
     month_name = month_return(time)
     name = year + " " + month_name
-    return name 
+    return name
+
 
 def month_return(time: datetime):
-    return months[time.month - 1 ]
+    return months[time.month - 1]
+
 
 def fortnight_return(time):
     year = str(time.year)
@@ -222,35 +227,40 @@ def fortnight_return(time):
     else:
         return year + " " + month_name + " 2nd half"
 
+
 def pershift_time_converter(time: datetime):
     month_name = month_return(time)
     day = str(time.day)
     shift = shift_return(time)
     return month_name + " " + day + " " + shift
 
-def pershift_list(df,session_state):
+
+def pershift_list(df, session_state):
     df = df.loc[
-        (df["Timestamp"] >= np.datetime64(session_state.start_date)) 
+        (df["Timestamp"] >= np.datetime64(session_state.start_date))
     ]
     df = df.loc[
-        (df["Timestamp"] <= np.datetime64(session_state.end_date)) 
+        (df["Timestamp"] <= np.datetime64(session_state.end_date))
     ]
     pershift = list(dict.fromkeys(df["Timestamp"].apply(pershift_time_converter)))
     return pershift
 
+
 def shift_return(time: datetime):
-    if time.hour < 8 :
+    if time.hour < 8:
         return "Shift 1"
-    elif time.hour  >= 8 and time.hour < 16:
+    elif time.hour >= 8 and time.hour < 16:
         return "Shift 2"
     else:
         return "Shift 3"
+
 
 def fortnight_list(df):
     fortnight_list = list(dict.fromkeys(df["Timestamp"].apply(fortnight_return)))
     return fortnight_list
 
-def week_return(time:datetime):
+
+def week_return(time: datetime):
     month_name = month_return(time)
     year = str(time.year)
     name = year + " " + month_name
@@ -265,6 +275,7 @@ def week_return(time:datetime):
     else:
         return name + " Week 5"
 
+
 def week_list(df):
     week_list = list(dict.fromkeys(df["Timestamp"].apply(week_return)))
     return week_list
@@ -274,6 +285,7 @@ def quarter_list(df):
     df["Timestamp"] = df["Timestamp"].apply(quarter_return)
     quarters = list(dict.fromkeys(df["Timestamp"]))
     return quarters
+
 
 def quarter_return(time: datetime):
     year = str(time.year)

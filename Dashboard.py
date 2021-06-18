@@ -1,8 +1,10 @@
 from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
-from time_convert import daily_rename, datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, hour_list, hour_rename, month_list, month_rename, \
-    month_return, pershift_list, pershift_time_converter, quarter_list, required_format_timestamp, time_strip, week_list, week_return, year_list, year_return
+from time_convert import daily_rename, datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, \
+    hour_list, hour_rename, month_list, month_rename, \
+    month_return, pershift_list, pershift_time_converter, quarter_list, required_format_timestamp, time_strip, \
+    week_list, week_return, year_list, year_return
 import streamlit as st
 import pandas as pd
 import datetime
@@ -37,7 +39,37 @@ session_state = SessionState.get(
     month_input=[]
 )
 
-st.set_page_config(layout="wide", initial_sidebar_state="auto", page_title="ADMIN PORTAL")
+st.set_page_config(layout="wide", initial_sidebar_state="auto")
+
+
+# , page_title="ADMIN PORTAL")
+
+def set_page_title(title):
+    st.sidebar.markdown(unsafe_allow_html=True, body=f"""
+        <iframe height=0 srcdoc="<script>
+            const title = window.parent.document.querySelector('title') \
+                
+            const oldObserver = window.parent.titleObserver
+            if (oldObserver) {{
+                oldObserver.disconnect()
+            }} \
+
+            const newObserver = new MutationObserver(function(mutations) {{
+                const target = mutations[0].target
+                if (target.text !== '{title}') {{
+                    target.text = '{title}'
+                }}
+            }}) \
+
+            newObserver.observe(title, {{ childList: true }})
+            window.parent.titleObserver = newObserver \
+
+            title.text = '{title}'
+        </script>" />
+    """)
+
+
+set_page_title("ADMIN PORTAL")
 
 
 # Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
@@ -107,22 +139,22 @@ def periodic():
             session_state.start_date = st.sidebar.date_input('Start Date')
             session_state.start_time = pd.to_datetime(st.sidebar.selectbox("Start Time", hour_list()))
             session_state.end_date = st.sidebar.date_input('End Date')
-            session_state.end_time = pd.to_datetime(st.sidebar.selectbox("End Time", hour_list(),help="End Date should be greater than start Date"))
-        if session_state.period_type in ["Per Shift","Daily"]:
+            session_state.end_time = pd.to_datetime(
+                st.sidebar.selectbox("End Time", hour_list(), help="End Date should be greater than start Date"))
+        if session_state.period_type in ["Per Shift", "Daily"]:
             session_state.start_date = st.sidebar.date_input('Start Date')
-            session_state.end_date = st.sidebar.date_input('End Date', help= "End Date should not be same as start date")
-            session_state.start_time = datetime.time(0,0,0)
-            session_state.end_time = datetime.time(0,0,0)
+            session_state.end_date = st.sidebar.date_input('End Date', help="End Date should not be same as start date")
+            session_state.start_time = datetime.time(0, 0, 0)
+            session_state.end_time = datetime.time(0, 0, 0)
             if session_state.start_date == session_state.end_date:
                 st.error("End Date should be greater than Start Date")
-            
+
         session_state.start, session_state.End = time_strip(
             session_state.start_date,
             session_state.start_time,
             session_state.end_date,
             session_state.end_time
         )
-
 
     run_periodic()
 
@@ -154,7 +186,7 @@ def run_periodic() -> None:
             df = quarter_filter(df)
     else:
         if session_state.period_type == "Per Shift":
-            session_state.per_shift_input = st.sidebar.multiselect("Choose Shift",pershift_list(df,session_state))
+            session_state.per_shift_input = st.sidebar.multiselect("Choose Shift", pershift_list(df, session_state))
             df = per_shift_filter(df)
     render_graph(df)
 
@@ -207,22 +239,24 @@ def half_filter(df: DataFrame):
         ]
     return df
 
+
 def half_year_list(df):
     half_list = list(dict.fromkeys(df["Timestamp"].apply(half_year_type_return)))
     return half_list
 
-def week_filter(df):        
+
+def week_filter(df):
     if Enquiry(session_state.week_number):
         st.error("Please choose a Week")
         df = pd.DataFrame()
     else:
-            df["Timestamp"] = df["Timestamp"].apply(week_return)
-            df = df.groupby(by=df["Timestamp"]).mean()
-            df.reset_index(inplace=True)
-            df = df.rename(columns={'index': 'Timestamp'})
-            df = df.loc[
-                (df["Timestamp"].isin(session_state.week_number))
-            ]
+        df["Timestamp"] = df["Timestamp"].apply(week_return)
+        df = df.groupby(by=df["Timestamp"]).mean()
+        df.reset_index(inplace=True)
+        df = df.rename(columns={'index': 'Timestamp'})
+        df = df.loc[
+            (df["Timestamp"].isin(session_state.week_number))
+        ]
     return df
 
 
@@ -349,7 +383,7 @@ def render_graph(df: DataFrame) -> None:
 
     if session_state.period_type == "Annual":
         df["Timestamp"] = df["Timestamp"].apply(year_return)
-    elif session_state.period_type in ["Weekly", "Half Year", "Fortnight","Per Shift","Quarterly"]:
+    elif session_state.period_type in ["Weekly", "Half Year", "Fortnight", "Per Shift", "Quarterly"]:
         pass
     elif session_state.period_type == "Monthly":
         df["Timestamp"] = df["Timestamp"].apply(month_rename)
@@ -358,7 +392,7 @@ def render_graph(df: DataFrame) -> None:
     elif session_state.period_type == "Daily":
         df["Timestamp"] = df["Timestamp"].apply(daily_rename)
     else:
-        df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)    
+        df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     if df.empty:
         st.title("No Data to display")
     else:

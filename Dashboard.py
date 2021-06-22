@@ -380,19 +380,19 @@ def render_graph(df: DataFrame) -> None:
     :param df: Dataframe for which the graph is to be plotted
     :return: It returns nothing. It just plots and displays graph
     """
-
-    if session_state.period_type == "Annual":
-        df["Timestamp"] = df["Timestamp"].apply(year_return)
-    elif session_state.period_type in ["Weekly", "Half Year", "Fortnight", "Per Shift", "Quarterly"]:
-        pass
-    elif session_state.period_type == "Monthly":
-        df["Timestamp"] = df["Timestamp"].apply(month_rename)
-    elif session_state.period_type == "Hourly":
-        df["Timestamp"] = df["Timestamp"].apply(hour_rename)
-    elif session_state.period_type == "Daily":
-        df["Timestamp"] = df["Timestamp"].apply(daily_rename)
-    else:
-        df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
+    if session_state.root_node == "Periodic":
+        if session_state.period_type == "Annual":
+            df["Timestamp"] = df["Timestamp"].apply(year_return)
+        elif session_state.period_type in ["Weekly", "Half Year", "Fortnight", "Per Shift", "Quarterly"]:
+            pass
+        elif session_state.period_type == "Monthly":
+            df["Timestamp"] = df["Timestamp"].apply(month_rename)
+        elif session_state.period_type == "Hourly":
+            df["Timestamp"] = df["Timestamp"].apply(hour_rename)
+        elif session_state.period_type == "Daily":
+            df["Timestamp"] = df["Timestamp"].apply(daily_rename)
+        else:
+            df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
     if df.empty:
         st.title("No Data to display")
     else:

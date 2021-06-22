@@ -198,9 +198,10 @@ def per_shift_filter(df):
         pass
     else:
         df["Timestamp"] = df["Timestamp"].apply(pershift_time_converter)
-        df = df.groupby(by=df["Timestamp"]).mean()
+        df = df.groupby(by=df["Timestamp"], sort=False).mean()
         df.reset_index(inplace=True)
         df = df.rename(columns={'index': 'Timestamp'})
+        st.dataframe(df)
         df = df.loc[
             (df["Timestamp"].isin(session_state.per_shift_input))
         ]
@@ -411,6 +412,7 @@ def render_graph(df: DataFrame) -> None:
                 doughnut_graph(df)
             elif session_state.graph_type == "Table":
                 st.dataframe(df)
+                # display_sum(df)
             elif session_state.graph_type == "Point Chart":
                 point_chart(df)
             if session_state.data_type != "Live":
@@ -441,6 +443,14 @@ def render_graph(df: DataFrame) -> None:
             df = data_provide()
             df["Timestamp"] = df["Timestamp"].apply(required_format_timestamp)
             st.dataframe(df)
+
+
+def display_sum(df):
+    column = "S7"
+    result = list(int(val) for val in df[column])
+    print(result)
+    st.title(sum(result))
+    st.title(len(result))
 
 
 def data_provide() -> DataFrame:

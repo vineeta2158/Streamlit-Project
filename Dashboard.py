@@ -201,7 +201,6 @@ def per_shift_filter(df):
         df = df.groupby(by=df["Timestamp"], sort=False).mean()
         df.reset_index(inplace=True)
         df = df.rename(columns={'index': 'Timestamp'})
-        st.dataframe(df)
         df = df.loc[
             (df["Timestamp"].isin(session_state.per_shift_input))
         ]

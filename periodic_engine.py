@@ -18,7 +18,7 @@ def period_filter(session_state):
         if session_state.period_type == "Hourly":
             df = period(df, freq="H")
         elif session_state.period_type == "Per Shift":
-            df = period(df, freq="8H")
+            df = period(df, freq="H")
         elif session_state.period_type == "Daily":
             df = period(df, freq="D")
         elif session_state.period_type == "Weekly":
@@ -43,6 +43,7 @@ def period(df: DataFrame, freq: str) -> DataFrame:
     df = df.rename(columns={'index': 'Timestamp'})
     return df
 
+
 def half_year_type_return(time):
     year = str(time.year)
     if time.month < 7:
@@ -50,10 +51,11 @@ def half_year_type_return(time):
     else:
         return year + " 2nd Half"
 
+
 def half_year_merge(df: DataFrame):
     print(df)
     df["Timestamp"] = df["Timestamp"].apply(half_year_type_return)
-    df = df.groupby(by=df["Timestamp"]).mean() 
+    df = df.groupby(by=df["Timestamp"]).mean()
     return df
 
 
@@ -63,7 +65,7 @@ def fetch_data(session_state):
     if session_state.period_type == "Hourly":
         df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
                 df['Timestamp'].astype(np.int64) <= session_state.End)]
-    elif session_state.period_type in ["Daily","Per Shift"]:
+    elif session_state.period_type in ["Daily", "Per Shift"]:
         # session_state.start, session_state.End = time_strip_only_day(session_state.start_time, session_state.end_time)
         df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
                 df['Timestamp'].astype(np.int64) <= session_state.End)]

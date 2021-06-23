@@ -444,12 +444,12 @@ def render_graph(df: DataFrame) -> None:
             st.dataframe(df)
 
 
-def display_sum(df):
-    column = "S7"
-    result = list(int(val) for val in df[column])
-    print(result)
-    st.title(sum(result))
-    st.title(len(result))
+# def display_sum(df):
+#     column = "S7"
+#     result = list(int(val) for val in df[column])
+#     print(result)
+#     st.title(sum(result))
+#     st.title(len(result))
 
 
 def data_provide() -> DataFrame:

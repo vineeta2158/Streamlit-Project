@@ -32,7 +32,7 @@ def period_filter(session_state):
         elif session_state.period_type == "Half Year":
             df = period(df, freq="M")
         elif session_state.period_type == "Annual":
-            df = period(df, freq="Y")
+            df = period(df, freq="M")
     return df
 
 

@@ -177,13 +177,16 @@ def run_periodic() -> None:
             df = week_filter(df)
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
         session_state.year_input = st.sidebar.selectbox("Choose Year", year_list(df))  # Give function call point here
-        df = year_filter(df)
         if session_state.period_type == "Half Year":
+            df = year_filter(df)
             session_state.Half_year = st.sidebar.multiselect("Choose Half", half_year_list(df))
             df = half_filter(df)
         if session_state.period_type == "Quarterly":
+            df = year_filter(df)
             session_state.quarter_type = st.sidebar.multiselect("Choose Quarter", quarter_list(df))
             df = quarter_filter(df)
+        if session_state.period_type == "Annual":
+            df = annual_filter(df)
     else:
         if session_state.period_type == "Per Shift":
             session_state.per_shift_input = st.sidebar.multiselect("Choose Shift", pershift_list(df, session_state))
@@ -296,6 +299,16 @@ def year_filter(df):
     return df
 
 
+def annual_filter(df):
+    df = df.groupby(by=df["Timestamp"].apply(year_return)).mean()
+    df.reset_index(inplace=True)
+    df = df.rename(columns={'index': 'Timestamp'})
+    df = df.loc[
+        (df["Timestamp"] == session_state.year_input)
+    ]
+    return df
+
+
 def manual() -> None:
     """
     This is the root function that runs first before any other code.
@@ -381,9 +394,7 @@ def render_graph(df: DataFrame) -> None:
     :return: It returns nothing. It just plots and displays graph
     """
     if session_state.root_node == "Periodic":
-        if session_state.period_type == "Annual":
-            df["Timestamp"] = df["Timestamp"].apply(year_return)
-        elif session_state.period_type in ["Weekly", "Half Year", "Fortnight", "Per Shift", "Quarterly"]:
+        if session_state.period_type in ["Weekly", "Half Year", "Fortnight", "Per Shift", "Quarterly", "Annual"]:
             pass
         elif session_state.period_type == "Monthly":
             df["Timestamp"] = df["Timestamp"].apply(month_rename)

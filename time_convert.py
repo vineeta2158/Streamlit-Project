@@ -71,6 +71,7 @@ def double_digit_convert(string2: str) -> str:
 
 
 def datetime_convert(time):
+    time = str(time)
     return datetime.datetime.strptime(time, "%Y%m%d%H%M%S")
 
 

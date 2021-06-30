@@ -49,11 +49,15 @@ Quarters = [
     "Quarter 4"
 ]
 
-Week1 = list(day for day in range(1, 8))
-Week2 = list(day for day in range(8, 15))
-Week3 = list(day for day in range(15, 22))
-Week4 = list(day for day in range(22, 30))
-Week5 = list(day for day in range(30, 32))
+Week_Format = np.array([
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+])
 
 
 def double_digit_convert(string2: str) -> str:
@@ -264,24 +268,40 @@ def fortnight_list(df):
     return fortnight_list
 
 
-def week_return(time: datetime):
-    month_name = month_return(time)
-    year = str(time.year)
-    name = year + " " + month_name
-    if time.day in Week1:
-        return name + " Week 1"
-    elif time.day in Week2:
-        return name + " Week 2"
-    elif time.day in Week3:
-        return name + " Week 3"
-    elif time.day in Week4:
-        return name + " Week 4"
-    else:
-        return name + " Week 5"
+
+def weekday_format_return(timestamp_list)->int:
+    timestamp_array = np.array(timestamp_list)
+    week_num = 1 
+    for time in timestamp_array:
+        next_day = time + datetime.timedelta(days=1)
+        day_name = datetime.datetime.strftime(time,"%A")
+        next_day_name = datetime.datetime.strftime(next_day,"%A")
+        day_index = np.where(Week_Format == day_name)
+        next_day_index = np.where(Week_Format == next_day_name)
+        month_name = month_return(time)
+        next_month_name = month_return(next_day)
+        year = time.year
+        day_i =  day_index[0][0]
+        next_day_i =  next_day_index[0][0]
+        format = str(time.year) + " " + month_name + " Week " + str(week_num)
+        yield format
+        if day_i > next_day_i:
+            week_num += 1
+        if month_name != next_month_name:
+            week_num = 1
+            
+
+def week_return(df: DataFrame):
+    timestamp_list = list(df["Timestamp"])
+    timestamp_list = list(time for time in weekday_format_return(timestamp_list))
+    df["Timestamp"] = timestamp_list
+    return df
 
 
-def week_list(df):
-    week_list = list(dict.fromkeys(df["Timestamp"].apply(week_return)))
+def week_list(dt):
+    df = dt
+    df = week_return(df)
+    week_list = list(dict.fromkeys(df["Timestamp"]))
     return week_list
 
 

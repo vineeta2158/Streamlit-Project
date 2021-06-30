@@ -237,7 +237,7 @@ def pershift_time_converter(time: datetime):
 
 
 def pershift_list(df, session_state):
-    if session_state.start_date >= session_state.end_date:
+    if (session_state.start_date >= session_state.end_date) or df.empty :
         return []
     else:
         df = df.loc[

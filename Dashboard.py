@@ -249,11 +249,10 @@ def half_year_list(df):
 
 
 def week_filter(df):
-    if Enquiry(session_state.week_number):
+    if Enquiry(session_state.week_number) or Enquiry(session_state.month_input):
         st.error("Please choose a Week")
         df = pd.DataFrame()
     else:
-        df["Timestamp"] = df["Timestamp"].apply(week_return)
         df = df.groupby(by=df["Timestamp"]).mean()
         df.reset_index(inplace=True)
         df = df.rename(columns={'index': 'Timestamp'})

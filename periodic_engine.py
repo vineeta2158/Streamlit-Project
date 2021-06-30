@@ -53,7 +53,6 @@ def half_year_type_return(time):
 
 
 def half_year_merge(df: DataFrame):
-    print(df)
     df["Timestamp"] = df["Timestamp"].apply(half_year_type_return)
     df = df.groupby(by=df["Timestamp"]).mean()
     return df
@@ -64,11 +63,11 @@ def fetch_data(session_state):
     df = df.loc[(df['Timestamp'] != "Timestamp")]  # Ignore the redundant column names in data, cleans data
     if session_state.period_type == "Hourly":
         df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
-                df['Timestamp'].astype(np.int64) <= session_state.End)]
+                df['Timestamp'].astype(np.int64) < session_state.End)]
     elif session_state.period_type in ["Daily", "Per Shift"]:
         # session_state.start, session_state.End = time_strip_only_day(session_state.start_time, session_state.end_time)
         df = df.loc[(df['Timestamp'].astype(np.int64) >= session_state.start) & (
-                df['Timestamp'].astype(np.int64) <= session_state.End)]
+                df['Timestamp'].astype(np.int64) < session_state.End)]
 
     df = data_filter(df, session_state=session_state)  # data filter function called
     columns = list(df.columns)

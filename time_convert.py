@@ -237,14 +237,17 @@ def pershift_time_converter(time: datetime):
 
 
 def pershift_list(df, session_state):
-    df = df.loc[
-        (df["Timestamp"] >= np.datetime64(session_state.start_date))
-    ]
-    df = df.loc[
-        (df["Timestamp"] <= np.datetime64(session_state.end_date))
-    ]
-    pershift = list(dict.fromkeys(df["Timestamp"].apply(pershift_time_converter)))
-    return pershift
+    if session_state.start_date >= session_state.end_date:
+        return []
+    else:
+        df = df.loc[
+            (df["Timestamp"] >= np.datetime64(session_state.start_date))
+        ]
+        df = df.loc[
+            (df["Timestamp"] <= np.datetime64(session_state.end_date))
+        ]
+        pershift = list(dict.fromkeys(df["Timestamp"].apply(pershift_time_converter)))
+        return pershift
 
 
 def shift_return(time: datetime):

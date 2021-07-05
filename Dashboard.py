@@ -3,7 +3,8 @@ from pandas.core.frame import DataFrame
 from streamlit import report_thread
 from time_convert import daily_rename, datetime_convert, end_time, fortnight_list, fortnight_return, hour_behind, \
     hour_list, hour_rename, month_list, month_rename, \
-    month_return, pershift_list, pershift_time_converter, quarter_list, required_format_timestamp, time_strip, \
+    month_return, pershift_list, pershift_time_converter, quarter_list, required_format_timestamp, \
+    time_strip, \
     week_list, week_return, year_list, year_return
 import streamlit as st
 import pandas as pd
@@ -187,6 +188,7 @@ def run_periodic() -> None:
             df = quarter_filter(df)
         if session_state.period_type == "Annual":
             df = annual_filter(df)
+
     else:
         if session_state.period_type == "Per Shift":
             session_state.per_shift_input = st.sidebar.multiselect("Choose Shift", pershift_list(df, session_state))
@@ -219,7 +221,7 @@ def fortnight_filter(df: DataFrame):
         df = pd.DataFrame()
     else:
         df["Timestamp"] = df["Timestamp"].apply(fortnight_return)
-        df = df.groupby(by=df["Timestamp"]).mean()
+        df = df.groupby(by=df["Timestamp"], sort=False).mean()
         df.reset_index(inplace=True)
         df = df.rename(columns={'index': 'Timestamp'})
         df = df.loc[
@@ -253,7 +255,7 @@ def week_filter(df):
         st.error("Please choose a Week")
         df = pd.DataFrame()
     else:
-        df = df.groupby(by=df["Timestamp"]).mean()
+        df = df.groupby(by=df["Timestamp"], sort=False).mean()
         df.reset_index(inplace=True)
         df = df.rename(columns={'index': 'Timestamp'})
         df = df.loc[
@@ -263,9 +265,16 @@ def week_filter(df):
 
 
 def quarter_filter(df):
-    df = df.loc[
-        (df["Timestamp"].isin(session_state.quarter_type))
-    ]
+    if Enquiry(session_state.quarter_type):
+        st.error("Please choose a Quarter")
+        df = pd.DataFrame()
+    else:
+        df = df.groupby(by=df["Timestamp"], sort=False).mean()
+        df.reset_index(inplace=True)
+        df = df.rename(columns={'index': 'Timestamp'})
+        df = df.loc[
+            (df["Timestamp"].isin(session_state.quarter_type))
+        ]
     return df
 
 
@@ -415,20 +424,26 @@ def render_graph(df: DataFrame) -> None:
         if session_state.display_type == "Graph":
             if session_state.graph_type == "Bar Chart":
                 bar_graph(df)
+                display_sum(df)
             elif session_state.graph_type == "Pie Chart":
                 pie_graph(df)
+                display_sum(df)
             elif session_state.graph_type == "Doughnut Chart":
                 doughnut_graph(df)
+                display_sum(df)
             elif session_state.graph_type == "Table":
                 st.dataframe(df)
-                # display_sum(df)
+                display_sum(df)
             elif session_state.graph_type == "Point Chart":
                 point_chart(df)
+                display_sum(df)
             if session_state.data_type != "Live":
                 if session_state.graph_type == "Trend Chart":
                     trend_line_chart(df)
+                    display_sum(df)
                 elif session_state.graph_type == "Area Chart":
                     area_chart(df)
+                    display_sum(df)
                 elif session_state.graph_type == 'X-Y Plotter':
                     x, y = st.beta_columns(2)
                     List = all_columns_filtered()
@@ -444,6 +459,7 @@ def render_graph(df: DataFrame) -> None:
                                 x_y_graph(df, session_state.column1, session_state.column2)
                             if x2.button("X-Y plots"):
                                 x_y_plot(df, session_state.column1, session_state.column2)
+                    display_sum(df)
             else:
                 if session_state.graph_type in session_state.Live_exlude_graph:
                     st.success(session_state.graph_type + " Cannot be plotted on Live Data Type  ")
@@ -454,9 +470,17 @@ def render_graph(df: DataFrame) -> None:
             st.dataframe(df)
 
 
+def display_sum(df):
+    column = "S2"
+    result = list(int(val) for val in df[column])
+    print(result)
+    st.title(sum(result))
+    st.title(len(result))
+
+
 # def display_sum(df):
-#     column = "S7"
-#     result = list(int(val) for val in df[column])
+#     columns = list(df.columns)
+#     result = list(int(val) for val in df[columns])
 #     print(result)
 #     st.title(sum(result))
 #     st.title(len(result))
@@ -611,7 +635,7 @@ def display_stats(df: DataFrame) -> None:
         maxi = maximum(df, name)
         aver = average(df, name)
         st.header('Statistics for %s :' % name)
-        st.subheader(' Minimum : `%.2f`  Maximum : `%.2f`  Average : `%.2f` \n ' % (
+        st.subheader(' Minimum : `%.4f`  Maximum : `%.4f`  Average : `%.4f` \n ' % (
             mini, maxi, aver
         ))
 

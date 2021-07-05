@@ -241,7 +241,7 @@ def pershift_time_converter(time: datetime):
 
 
 def pershift_list(df, session_state):
-    if (session_state.start_date >= session_state.end_date) or df.empty :
+    if (session_state.start_date >= session_state.end_date) or df.empty:
         return []
     else:
         df = df.loc[
@@ -268,28 +268,27 @@ def fortnight_list(df):
     return fortnight_list
 
 
-
-def weekday_format_return(timestamp_list)->int:
+def weekday_format_return(timestamp_list) -> int:
     timestamp_array = np.array(timestamp_list)
-    week_num = 1 
+    week_num = 1
     for time in timestamp_array:
         next_day = time + datetime.timedelta(days=1)
-        day_name = datetime.datetime.strftime(time,"%A")
-        next_day_name = datetime.datetime.strftime(next_day,"%A")
+        day_name = datetime.datetime.strftime(time, "%A")
+        next_day_name = datetime.datetime.strftime(next_day, "%A")
         day_index = np.where(Week_Format == day_name)
         next_day_index = np.where(Week_Format == next_day_name)
         month_name = month_return(time)
         next_month_name = month_return(next_day)
         year = time.year
-        day_i =  day_index[0][0]
-        next_day_i =  next_day_index[0][0]
+        day_i = day_index[0][0]
+        next_day_i = next_day_index[0][0]
         format = str(time.year) + " " + month_name + " Week " + str(week_num)
         yield format
         if day_i > next_day_i:
             week_num += 1
         if month_name != next_month_name:
             week_num = 1
-            
+
 
 def week_return(df: DataFrame):
     timestamp_list = list(df["Timestamp"])
@@ -315,10 +314,10 @@ def quarter_return(time: datetime):
     year = str(time.year)
     month_name = month_return(time)
     if month_name in quarter_1:
-        return year + " Quarter 1"
+        return year + " 1st Quarter"
     elif month_name in quarter_2:
-        return year + " Quarter 2"
+        return year + " 2nd Quarter"
     elif month_name in quarter_3:
-        return year + " Quarter 3"
+        return year + " 3rd Quarter"
     elif month_name in quarter_4:
-        return year + " Quarter 4"
+        return year + " 4th Quarter"

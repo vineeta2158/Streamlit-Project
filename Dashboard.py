@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import mean
 from Statistics import average, maximum, minimum
 from pandas.core.frame import DataFrame
 from streamlit import report_thread
@@ -163,7 +164,7 @@ def periodic():
 def run_periodic() -> None:
     df = period_filter(session_state)
     if session_state.period_type in ["Weekly", "Fortnight", "Monthly"]:
-        session_state.year_input = st.sidebar.selectbox("Choose Year", year_list(df))  # Give function call point here
+        session_state.year_input = st.sidebar.multiselect("Choose Year", year_list(df))  # Give function call point here
         df = year_filter(df)
         session_state.month_input = st.sidebar.multiselect("Choose Month", month_list(df))
         df = year_month_filter(df)
@@ -177,7 +178,7 @@ def run_periodic() -> None:
             session_state.week_number = st.sidebar.multiselect("Choose Week", week_list(df))
             df = week_filter(df)
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
-        session_state.year_input = st.sidebar.selectbox("Choose Year", year_list(df))  # Give function call point here
+        session_state.year_input = st.sidebar.multiselect("Choose Year", year_list(df))  # Give function call point here
         if session_state.period_type == "Half Year":
             df = year_filter(df)
             session_state.Half_year = st.sidebar.multiselect("Choose Half", half_year_list(df))
@@ -282,12 +283,12 @@ def year_month_filter(df):
     if Enquiry(session_state.month_input):
         st.error("Please choose a month")
         df = df.loc[
-            (df["Timestamp"].apply(year_return) == session_state.year_input)
+            (df["Timestamp"].apply(year_return).isin(session_state.year_input))
         ]
 
     else:
         df = df.loc[
-            (df["Timestamp"].apply(year_return) == session_state.year_input)
+            (df["Timestamp"].apply(year_return).isin(session_state.year_input))
             & (df["Timestamp"].apply(month_return).isin(session_state.month_input))
             ]
     return df
@@ -302,7 +303,7 @@ def month_check(df):
 
 def year_filter(df):
     df = df.loc[
-        (df["Timestamp"].apply(year_return) == session_state.year_input)
+        (df["Timestamp"].apply(year_return).isin(session_state.year_input))
     ]
     return df
 
@@ -312,7 +313,7 @@ def annual_filter(df):
     df.reset_index(inplace=True)
     df = df.rename(columns={'index': 'Timestamp'})
     df = df.loc[
-        (df["Timestamp"] == session_state.year_input)
+        (df["Timestamp"].isin(session_state.year_input))
     ]
     return df
 
@@ -470,21 +471,35 @@ def render_graph(df: DataFrame) -> None:
             st.dataframe(df)
 
 
+
+def list_record(df, list_column):
+    i=0
+    while True:
+        if i >= len(list_column):
+            break
+        else:
+            result =  list(val for val in df[list_column[i]])
+            dict = {
+                "Tag Name": list_column[i],
+                "Sum of all Values" : sum(result),
+                "Total number of values" : len(result),
+            }
+            yield dict
+            i += 1
+            
+        
+        
+
 def display_sum(df):
-    column = "S2"
-    result = list(int(val) for val in df[column])
-    print(result)
-    st.title(sum(result))
-    st.title(len(result))
-
-
-# def display_sum(df):
-#     columns = list(df.columns)
-#     result = list(int(val) for val in df[columns])
-#     print(result)
-#     st.title(sum(result))
-#     st.title(len(result))
-
+    if Enquiry(session_state.column_statistic):
+        pass
+    else:
+        columns = list(col for col in session_state.column_statistic)
+        data = list(val for val in list_record(df,columns))
+        dt = pd.DataFrame.from_records(data)
+        st.dataframe(dt)
+    
+    
 
 def data_provide() -> DataFrame:
     """

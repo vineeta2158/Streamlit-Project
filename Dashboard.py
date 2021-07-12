@@ -14,9 +14,19 @@ from graphs import bar_graph, pie_graph, trend_line_chart, doughnut_graph, point
 import numpy as np
 import SessionState
 from periodic_engine import Enquiry, fetch_data, half_year_merge, half_year_type_return, period_filter
+from PIL import Image
 import statistics
 
 session_state = SessionState.get(
+    logo_organization="",
+    client_name="",
+    client_logo=None,
+    report_name="",
+    date_input="",
+    time_input="",
+    prepared_by="",
+    checked_by="",
+    approved_by="",
     root_node="",
     file_name="Node06_test.csv",
     start=0,
@@ -41,7 +51,8 @@ session_state = SessionState.get(
     month_input=[]
 )
 
-st.set_page_config(layout="wide", initial_sidebar_state="auto")
+img = Image.open('ABCD Logo.png')
+st.set_page_config(layout="wide", initial_sidebar_state="auto", page_icon=img)
 
 
 # , page_title="ADMIN PORTAL")
@@ -71,8 +82,7 @@ def set_page_title(title):
     """)
 
 
-set_page_title("ADMIN PORTAL")
-
+set_page_title("ABCD ANALYTICS")
 
 # Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
 # Page config should run only once while executing code
@@ -95,6 +105,36 @@ set_page_title("ADMIN PORTAL")
 #     os.path.join(os.path.dirname(__file__), session_state.file_name),
 #     'dummy:' + session_state.file_name
 # )
+
+# session_state.report_name = st.text_input('Report Name:', value=session_state.report_name)
+
+
+client_info = st.beta_columns(2)
+session_state.client_name = client_info[0].text_input('Client Name')
+if session_state.client_logo is None:
+    session_state.client_logo = client_info[1].file_uploader('Client Logo')
+    if st.button("Confirm Name and Logo"):
+        report_thread.get_report_ctx()
+else:
+    client_info[1].image(session_state.client_logo)
+
+# def client_info():
+#     if st.button('View'):
+#         session_state.client_logo = client_info[1].file_uploader('Client Logo')
+
+
+name_cols = st.beta_columns(3)
+session_state.report_name = name_cols[0].text_input('Report Name')
+session_state.date_input = name_cols[1].date_input('Date')
+session_state.time_input = name_cols[2].time_input('Time')
+
+# def logo():
+#     session_state.logo_organizaton = st.sidebar.image(
+#         "ABCD Logo.png", use_column_width=True
+#     )
+
+
+st.sidebar.image('ABCD_Logo.png')
 
 
 def main() -> None:
@@ -309,12 +349,16 @@ def year_filter(df):
 
 
 def annual_filter(df):
-    df = df.groupby(by=df["Timestamp"].apply(year_return)).mean()
-    df.reset_index(inplace=True)
-    df = df.rename(columns={'index': 'Timestamp'})
-    df = df.loc[
-        (df["Timestamp"].isin(session_state.year_input))
-    ]
+    if Enquiry(session_state.year_input):
+        st.error("Please choose a Year")
+        df = pd.DataFrame()
+    else:
+        df = df.groupby(by=df["Timestamp"].apply(year_return)).mean()
+        df.reset_index(inplace=True)
+        df = df.rename(columns={'index': 'Timestamp'})
+        df = df.loc[
+            (df["Timestamp"].isin(session_state.year_input))
+        ]
     return df
 
 
@@ -471,35 +515,31 @@ def render_graph(df: DataFrame) -> None:
             st.dataframe(df)
 
 
-
 def list_record(df, list_column):
-    i=0
+    i = 0
     while True:
         if i >= len(list_column):
             break
         else:
-            result =  list(val for val in df[list_column[i]])
+            result = list(val for val in df[list_column[i]])
             dict = {
                 "Tag Name": list_column[i],
-                "Sum of all Values" : sum(result),
-                "Total number of values" : len(result),
+                "Sum of all Values": sum(result),
+                "Total number of values": len(result),
             }
             yield dict
             i += 1
-            
-        
-        
+
 
 def display_sum(df):
     if Enquiry(session_state.column_statistic):
         pass
     else:
         columns = list(col for col in session_state.column_statistic)
-        data = list(val for val in list_record(df,columns))
+        data = list(val for val in list_record(df, columns))
         dt = pd.DataFrame.from_records(data)
         st.dataframe(dt)
-    
-    
+
 
 def data_provide() -> DataFrame:
     """
@@ -666,3 +706,8 @@ def data_freshness_check(df: DataFrame) -> DataFrame:
 
 if __name__ == "__main__":  # this defines that main function is root function
     main()
+
+name_cols = st.beta_columns(3)
+session_state.prepared_by = name_cols[0].text_input('Prepared By')
+session_state.checked_by = name_cols[1].text_input('Checked By')
+session_state.approved_by = name_cols[2].text_input('Approved By')

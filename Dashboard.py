@@ -110,10 +110,10 @@ set_page_title("ABCD ANALYTICS")
 
 
 client_info = st.beta_columns(2)
-session_state.client_name = client_info[0].text_input('Client Name')
+session_state.client_info = client_info[0].image('ABCD_Logo.png')
 if session_state.client_logo is None:
     session_state.client_logo = client_info[1].file_uploader('Client Logo')
-    if st.button("Confirm Name and Logo"):
+    if st.button("Confirm Logo"):
         report_thread.get_report_ctx()
 else:
     client_info[1].image(session_state.client_logo)
@@ -128,13 +128,11 @@ session_state.report_name = name_cols[0].text_input('Report Name')
 session_state.date_input = name_cols[1].date_input('Date')
 session_state.time_input = name_cols[2].time_input('Time')
 
+
 # def logo():
 #     session_state.logo_organizaton = st.sidebar.image(
 #         "ABCD Logo.png", use_column_width=True
 #     )
-
-
-st.sidebar.image('ABCD_Logo.png')
 
 
 def main() -> None:

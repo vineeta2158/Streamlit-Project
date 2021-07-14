@@ -54,7 +54,7 @@ def pie_graph(data: DataFrame) -> None:
     spec = list(list({'type': 'domain'} for J in range(no_col)) for I in range(no_row))
     fig = make_subplots(rows=no_row, cols=no_col, specs=spec)
     Pies = list(
-        go.Pie(labels=columns, values=list(row[col] for col in columns), name=row["Timestamp"]) for index, row in
+        go.Pie(labels=columns, values=list(row[col] for col in columns)) for index, row in
         df.iterrows())
     k = 0
     for i in range(1, no_row + 1):
@@ -62,7 +62,7 @@ def pie_graph(data: DataFrame) -> None:
             if len(Pies) > k:
                 fig.add_trace(Pies[k], row=i, col=j)
                 k += 1
-    fig.update_traces(hoverinfo="label+percent+name")
+    fig.update_traces(hoverinfo="label+percent")
     # fig.update_traces(hole=.4, hoverinfo="label+percent+name") # For Doughnut Graph
     fig.update_layout(
         title_text="PIE CHART",
@@ -112,7 +112,7 @@ def doughnut_graph(data: DataFrame) -> None:
     spec = list(list({'type': 'domain'} for J in range(no_col)) for I in range(no_row))
     fig = make_subplots(rows=no_row, cols=no_col, specs=spec)
     Pies = list(
-        go.Pie(labels=columns, values=list(row[col] for col in columns), name=row["Timestamp"]) for index, row in
+        go.Pie(labels=columns, values=list(row[col] for col in columns)) for index, row in
         df.iterrows())
     k = 0
     for i in range(1, no_row + 1):
@@ -120,7 +120,7 @@ def doughnut_graph(data: DataFrame) -> None:
             if len(Pies) > k:
                 fig.add_trace(Pies[k], row=i, col=j)
                 k += 1
-    fig.update_traces(hole=.4, hoverinfo="label+percent+name")  # For Doughnut Graph
+    fig.update_traces(hole=.4, hoverinfo="label+percent")  # For Doughnut Graph
     st.plotly_chart(fig, use_container_width=True)
 
 

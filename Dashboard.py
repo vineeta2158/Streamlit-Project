@@ -113,7 +113,7 @@ client_info = st.beta_columns(2)
 session_state.client_info = client_info[0].image('ABCD_Logo.png')
 if session_state.client_logo is None:
     session_state.client_logo = client_info[1].file_uploader('Client Logo')
-    if st.button("Confirm Logo"):
+elif session_state.client_logo != None :
         report_thread.get_report_ctx()
 else:
     client_info[1].image(session_state.client_logo)
@@ -212,8 +212,10 @@ def run_periodic() -> None:
             else:
                 session_state.fortnight_input = st.sidebar.multiselect("Choose Half", fortnight_list(df))
                 df = fortnight_filter(df)
-        if session_state.period_type == "Weekly":
+        # if session_state.period_type == "Weekly" and not Enquiry(session_state.month_input) and not Enquiry(session_state.year_input):
+        if session_state.period_type == "Weekly" :
             session_state.week_number = st.sidebar.multiselect("Choose Week", week_list(df))
+            # df.to_csv("./Test.csv")
             df = week_filter(df)
     elif session_state.period_type in ["Quarterly", "Half Year", "Annual"]:
         session_state.year_input = st.sidebar.multiselect("Choose Year", year_list(df))  # Give function call point here

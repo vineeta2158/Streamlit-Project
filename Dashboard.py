@@ -18,6 +18,7 @@ from PIL import Image
 import statistics
 
 session_state = SessionState.get(
+    file_check=0,
     logo_organization="",
     client_name="",
     client_logo="client_logo.png",
@@ -28,7 +29,7 @@ session_state = SessionState.get(
     checked_by="",
     approved_by="",
     root_node="",
-    file_name="Node06_test.csv",
+    file_name="Buffer.csv",
     start=0,
     End=0,
     start_date=hour_behind(),
@@ -49,12 +50,31 @@ session_state = SessionState.get(
     period_timeframe="",
     year_input="",
     month_input=[],
-    confirm_count=0
+    confirm_count=0,
+    ABCD_logo="ABCD Logo.png"
 )
 
-img = Image.open('ABCD Logo.png')
-st.set_page_config(layout="wide", initial_sidebar_state="auto", page_icon=img)
 
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed", page_icon=Image.open(session_state.ABCD_logo))
+
+
+def page_header():
+    img = Image.open(session_state.ABCD_logo)
+    client_info = st.beta_columns(2)
+    s1,s2,s3 = st.beta_columns(3)
+    session_state.client_info = client_info[0].image('ABCD_Logo.png')
+    client_info[1].image(session_state.client_logo)
+    name_cols = st.beta_columns(3)
+    session_state.report_name = name_cols[0].text_input('Report Name')
+    session_state.date_input = name_cols[1].date_input('Date')
+    session_state.time_input = name_cols[2].time_input('Time')
+
+
+def page_footer():
+    name_cols = st.beta_columns(3)
+    session_state.prepared_by = name_cols[0].text_input('Prepared By')
+    session_state.checked_by = name_cols[1].text_input('Checked By')
+    session_state.approved_by = name_cols[2].text_input('Approved By')
 
 # , page_title="ADMIN PORTAL")
 
@@ -121,28 +141,14 @@ set_page_title("ABCD ANALYTICS")
 
 # session_state.report_name = st.text_input('Report Name:', value=session_state.report_name)
 
-client_info = st.beta_columns(2)
-s1,s2,s3 = st.beta_columns(3)
-session_state.client_info = client_info[0].image('ABCD_Logo.png')
-# if not session_state.client_logo:
-#     session_state.client_logo = client_info[1].file_uploader('Client Logo')
-# elif session_state.client_logo:
-#         report_thread.get_report_ctx()
-# s1.empty()
-# s2.empty()
-# if session_state.client_logo:
-#     trigger_rerun()
-client_info[1].image(session_state.client_logo)
+
 
 # def client_info():
 #     if st.button('View'):
 #         session_state.client_logo = client_info[1].file_uploader('Client Logo')
 
 
-name_cols = st.beta_columns(3)
-session_state.report_name = name_cols[0].text_input('Report Name')
-session_state.date_input = name_cols[1].date_input('Date')
-session_state.time_input = name_cols[2].time_input('Time')
+
 
 
 # def logo():
@@ -152,6 +158,7 @@ session_state.time_input = name_cols[2].time_input('Time')
 
 
 def main() -> None:
+    page_header()
     session_state.root_node = st.sidebar.selectbox(
         "Report Type",
         ["Periodic", "Manual"]
@@ -160,6 +167,7 @@ def main() -> None:
         periodic()
     else:
         manual()
+    page_footer()
 
 
 def periodic():
@@ -710,10 +718,20 @@ def data_freshness_check(df: DataFrame) -> DataFrame:
         return d2
 
 
+def csv_file():
+    csv = st.file_uploader("Please Choose the csv file to work on",type="csv")
+    if csv:
+        df = pd.read_csv(csv)
+        df.to_csv("Buffer.csv",index = False)
+        session_state.file_check = 1
+        if st.button("Submit"):
+            trigger_rerun()
+    
 if __name__ == "__main__":  # this defines that main function is root function
-    main()
+    if session_state.file_check == 0:
+        st.title("Upload CSV")
+        csv_file()
+    else:
+        main()
 
-name_cols = st.beta_columns(3)
-session_state.prepared_by = name_cols[0].text_input('Prepared By')
-session_state.checked_by = name_cols[1].text_input('Checked By')
-session_state.approved_by = name_cols[2].text_input('Approved By')
+

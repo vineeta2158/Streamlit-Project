@@ -20,7 +20,7 @@ import statistics
 session_state = SessionState.get(
     logo_organization="",
     client_name="",
-    client_logo=None,
+    client_logo="client_logo.png",
     report_name="",
     date_input="",
     time_input="",
@@ -48,7 +48,8 @@ session_state = SessionState.get(
     report_type="",
     period_timeframe="",
     year_input="",
-    month_input=[]
+    month_input=[],
+    confirm_count=0
 )
 
 img = Image.open('ABCD Logo.png')
@@ -82,6 +83,18 @@ def set_page_title(title):
     """)
 
 
+def trigger_rerun() -> None:
+    """
+    Reruns the script from start.
+    it can be used to refresh the program.
+
+    :return: Doesnt return anything
+    """
+    # pass
+    report_thread.get_report_ctx()
+
+    # rerun()
+
 set_page_title("ABCD ANALYTICS")
 
 # Page config defines the layout of page which includes params like layout, sidebar_status, title of page.
@@ -108,15 +121,18 @@ set_page_title("ABCD ANALYTICS")
 
 # session_state.report_name = st.text_input('Report Name:', value=session_state.report_name)
 
-
 client_info = st.beta_columns(2)
+s1,s2,s3 = st.beta_columns(3)
 session_state.client_info = client_info[0].image('ABCD_Logo.png')
-if session_state.client_logo is None:
-    session_state.client_logo = client_info[1].file_uploader('Client Logo')
-elif session_state.client_logo != None :
-        report_thread.get_report_ctx()
-else:
-    client_info[1].image(session_state.client_logo)
+# if not session_state.client_logo:
+#     session_state.client_logo = client_info[1].file_uploader('Client Logo')
+# elif session_state.client_logo:
+#         report_thread.get_report_ctx()
+# s1.empty()
+# s2.empty()
+# if session_state.client_logo:
+#     trigger_rerun()
+client_info[1].image(session_state.client_logo)
 
 # def client_info():
 #     if st.button('View'):
@@ -649,17 +665,7 @@ def Enquiry(lis1: list) -> bool:
         return False
 
 
-def trigger_rerun() -> None:
-    """
-    Reruns the script from start.
-    it can be used to refresh the program.
 
-    :return: Doesnt return anything
-    """
-    # pass
-    report_thread.get_report_ctx()
-
-    # rerun()
 
 
 def data_filter(df: DataFrame) -> DataFrame:
